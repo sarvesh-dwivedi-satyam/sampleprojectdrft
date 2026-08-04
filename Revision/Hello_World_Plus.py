@@ -1,0 +1,5 @@
+name = input("Enter your name: ")
+target = input("Enter your target field: ")
+print("-"*40)
+print(f"Welcome {name} as a {target}.")
+print("-"*40)
