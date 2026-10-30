@@ -9,15 +9,34 @@
 </head>
 <body>
     <header class="site-header"><a class="brand" href="index.html">Midnight Bistro</a><nav aria-label="Primary navigation"><ul><li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="login.html" aria-current="page">Login</a></li><li><a href="signup.html">Sign Up</a></li></ul></nav></header>
-    <main class="page-main auth-main"><form class="form-panel auth-panel" data-auth-form="login" novalidate>
+    <main class="page-main auth-main">
+        <section class="form-panel auth-panel">
+            <form data-auth-form="login" novalidate>
         <p class="eyebrow">Welcome back</p><h1>Sign In</h1>
+        <a class="google-auth-button" href="/api/auth/google/start?flow=login" data-google-button>
+            <span class="google-auth-button__mark" aria-hidden="true">G</span>
+            <span>Continue with Google</span>
+        </a>
+        <p class="auth-divider"><span>or sign in with email</span></p>
         <label for="login-email">Email address</label><input id="login-email" name="email" type="email" autocomplete="email" required maxlength="254">
         <label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="128">
         <label class="checkbox-label"><input name="remember" type="checkbox"> Remember me on this device</label>
         <button class="button button--primary" type="submit">Login</button>
         <p class="notice" data-form-status role="status" aria-live="polite"></p>
         <p><a href="forgot-password.html">Forgot password?</a></p><p>New to Midnight Bistro? <a href="signup.html">Create an account</a></p>
-    </form></main>
+            </form>
+        <section class="google-link-panel" data-google-link-panel hidden aria-labelledby="google-link-heading">
+            <h2 id="google-link-heading">Link your existing account</h2>
+            <p>This verified Google email already belongs to an account. Enter that account’s password to link it securely.</p>
+            <form data-google-link-form novalidate>
+                <label for="google-link-password">Existing account password</label>
+                <input id="google-link-password" name="password" type="password" autocomplete="current-password" required maxlength="128">
+                <button class="button button--primary" type="submit">Verify &amp; Link Google</button>
+                <p class="notice" data-google-link-status role="status" aria-live="polite"></p>
+            </form>
+        </section>
+        </section>
+    </main>
     <footer class="site-footer"><a class="brand" href="index.html">Midnight Bistro</a><p><small>&copy; 2026 Midnight Bistro.</small></p></footer>
 </body>
 </html>

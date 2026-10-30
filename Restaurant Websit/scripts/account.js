@@ -19,7 +19,13 @@
         if (profile) {
             profileForm.elements.fullName.value = session.customer.fullName;
             profileForm.elements.email.value = session.customer.email;
-            profile.textContent = 'Your account details are current.';
+            profile.textContent = `Signed in${session.customer.authProvider ? ` with ${session.customer.authProvider.replace('+', ' and ')}` : ''}.`;
+            const picture = document.querySelector('[data-profile-picture]');
+            if (session.customer.profilePicture) {
+                picture.src = session.customer.profilePicture;
+                picture.alt = `${session.customer.fullName}'s Google profile picture`;
+                picture.hidden = false;
+            }
         }
         if (orders) {
             const data = await window.Midnight.api('/api/orders/mine');

@@ -2,8 +2,113 @@
     border-top: 2px solid var(--color-rich-gold);
 }
 
+.auth-panel > form {
+    display: grid;
+    gap: var(--space-2);
+}
+
 .auth-panel > p:last-child {
     margin-bottom: 0;
+}
+
+.google-auth-button {
+    display: flex;
+    min-height: 3.2rem;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--color-rich-gold);
+    border-radius: var(--radius-pill);
+    background: linear-gradient(110deg, rgb(197 160 89 / 12%), rgb(88 27 37 / 22%));
+    color: var(--color-text-primary);
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    transition:
+        border-color var(--transition-standard),
+        background-color var(--transition-standard),
+        box-shadow var(--transition-standard),
+        transform var(--transition-standard);
+}
+
+.google-auth-button:hover {
+    border-color: var(--color-gold);
+    background-color: rgb(212 163 115 / 12%);
+    box-shadow: var(--shadow-glow);
+    color: var(--color-gold);
+    transform: translateY(-1px);
+}
+
+.google-auth-button[aria-busy="true"] {
+    cursor: progress;
+    opacity: 0.8;
+}
+
+.google-auth-button__mark {
+    display: grid;
+    width: 1.65rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 50%;
+    color: var(--color-gold);
+    font-family: Arial, sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-block: var(--space-2);
+    color: var(--color-text-secondary);
+    font-size: 0.86rem;
+    text-align: center;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    height: 1px;
+    flex: 1;
+    background: var(--color-border);
+    content: "";
+}
+
+.google-link-panel {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface-raised);
+}
+
+.google-link-panel h2 {
+    margin-bottom: var(--space-2);
+    font-size: 1.4rem;
+}
+
+.google-link-panel form {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.google-link-panel label {
+    color: var(--color-text-primary);
+}
+
+.google-link-panel input {
+    width: 100%;
+    min-height: 2.9rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    background: #171412;
+    color: var(--color-text-primary);
+}
+
+.google-link-panel[hidden] {
+    display: none;
 }
 
 .form-panel .notice {

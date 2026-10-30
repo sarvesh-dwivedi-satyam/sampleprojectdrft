@@ -197,6 +197,14 @@
     font-size: clamp(2.4rem, 6vw, 3.4rem);
 }
 
+.profile-picture {
+    width: 4.5rem;
+    height: 4.5rem;
+    border: 2px solid var(--color-rich-gold);
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .notice {
     color: var(--color-text-secondary);
 }

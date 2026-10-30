@@ -1,8 +1,59 @@
 (() => {
     const form = document.querySelector('[data-auth-form]');
+    const status = form?.querySelector('[data-form-status]');
+    const mode = form?.dataset.authForm;
+    const query = new URLSearchParams(location.search);
+    const authMessages = {
+        'google-cancelled': 'Google sign-in was cancelled. You can try again or use email and password.',
+        'google-state-invalid': 'That Google sign-in request expired or could not be verified. Please try again.',
+        'google-login-failed': 'Google sign-in could not be completed. Please try again.',
+        'google-account-conflict': 'This Google account could not be linked because it is already associated with another account.',
+        'google-email-mismatch': 'To link Google, sign in with a Google account that uses the same verified email address.',
+        'google-link-session-expired': 'Your sign-in session expired before account linking completed. Please try again.',
+        'account-disabled': 'This account is currently unavailable. Please contact the restaurant.',
+        'admin-required': 'Administrator access is required for that page.',
+        'sign-in-required': 'Sign in before linking a Google account.'
+    };
+
+    if (status && query.has('authError')) {
+        status.textContent = authMessages[query.get('authError')] || 'Sign-in could not be completed. Please try again.';
+    }
+
+    document.querySelectorAll('[data-google-button]').forEach((button) => {
+        button.addEventListener('click', () => {
+            button.setAttribute('aria-busy', 'true');
+            button.querySelector('span:last-child').textContent = 'Connecting to Google…';
+        });
+    });
+
+    const linkPanel = document.querySelector('[data-google-link-panel]');
+    const linkForm = document.querySelector('[data-google-link-form]');
+    if (linkPanel && query.get('googleLink') === 'required') {
+        linkPanel.hidden = false;
+        linkForm.elements.password.focus();
+        history.replaceState(null, '', location.pathname);
+    }
+
+    linkForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!linkForm.reportValidity()) return;
+        const linkStatus = linkForm.querySelector('[data-google-link-status]');
+        const button = linkForm.querySelector('button[type="submit"]');
+        button.disabled = true;
+        linkStatus.textContent = 'Verifying the existing account…';
+        try {
+            const result = await window.Midnight.api('/api/auth/google/link', {
+                method: 'POST',
+                body: JSON.stringify({ password: linkForm.elements.password.value })
+            });
+            location.href = result.customer.role === 'admin' ? 'admin/index.html' : 'profile.html';
+        } catch (error) {
+            linkStatus.textContent = error.message;
+            button.disabled = false;
+        }
+    });
+
     if (!form) return;
-    const status = form.querySelector('[data-form-status]');
-    const mode = form.dataset.authForm;
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();

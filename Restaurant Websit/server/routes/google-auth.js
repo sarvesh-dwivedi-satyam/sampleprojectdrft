@@ -90,7 +90,10 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
 
     try {
         const client = google.getClient();
-        const { tokens } = await client.getToken({ code: req.query.code });
+        const { tokens } = await client.getToken({
+            code: req.query.code,
+            redirect_uri: process.env.GOOGLE_CALLBACK_URL
+        });
         if (typeof tokens.id_token !== 'string') return safeRedirect(res, flow, 'google-login-failed');
         const ticket = await client.verifyIdToken({
             idToken: tokens.id_token,
@@ -214,10 +217,6 @@ router.post('/link', googleLimiter, verifyCsrf, async (req, res, next) => {
         if (error.code === '23505') return res.status(409).json({ error: 'This Google identity or email is already in use.' });
         next(error);
     }
-});
-
-router.post('/link/current', requireAuth, googleLimiter, verifyCsrf, (req, res) => {
-    res.redirect(307, '/api/auth/google/start?flow=link');
 });
 
 module.exports = router;

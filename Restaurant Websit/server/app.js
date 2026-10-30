@@ -6,11 +6,40 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const pool = require('./config/database');
 const api = require('./routes/api');
+const googleAuth = require('./routes/google-auth');
 
 const app = express();
 const PgSession = connectPgSimple(session);
 const production = process.env.NODE_ENV === 'production';
 const origin = new URL(process.env.APP_ORIGIN || `http://localhost:${process.env.PORT || 3000}`).origin;
+
+function requirePageUser(requiredRole) {
+    return async (req, res, next) => {
+        const customer = req.session?.customer;
+        if (!customer) return res.redirect(requiredRole === 'admin' ? '/admin/login.html' : '/login.html');
+        try {
+            const result = await pool.query(
+                'SELECT role, is_active FROM users WHERE id = $1',
+                [customer.id]
+            );
+            const user = result.rows[0];
+            if (!user || !user.is_active) {
+                return req.session.destroy((error) => {
+                    if (error) return next(error);
+                    res.clearCookie('midnight.sid');
+                    res.redirect(requiredRole === 'admin' ? '/admin/login.html' : '/login.html');
+                });
+            }
+            customer.role = user.role;
+            if (requiredRole && user.role !== requiredRole) {
+                return res.redirect(requiredRole === 'admin' ? '/admin/login.html?authError=admin-required' : '/profile.html');
+            }
+            next();
+        } catch (error) {
+            next(error);
+        }
+    };
+}
 
 app.disable('x-powered-by');
 app.set('trust proxy', production ? 1 : false);
@@ -67,6 +96,7 @@ app.use('/api', (req, res, next) => {
     }
     next();
 });
+app.use('/api/auth/google', googleAuth);
 app.use('/api', api);
 
 app.get('/api/health', async (_req, res, next) => {
@@ -81,14 +111,10 @@ app.get('/api/health', async (_req, res, next) => {
 app.get('/admin/login.html', (_req, res) => {
     res.sendFile(path.resolve(__dirname, '..', 'admin', 'login.html'));
 });
-app.use(['/profile.html', '/orders.html', '/checkout.html'], (req, res, next) => {
-    if (req.session.customer) return next();
-    res.redirect('/login.html');
-});
+app.use(['/profile.html', '/orders.html', '/checkout.html'], requirePageUser());
 app.use('/admin', (req, res, next) => {
     if (['/login.html', '/admin.js', '/admin.css'].includes(req.path)) return next();
-    if (req.session.customer?.role === 'admin') return next();
-    res.redirect('/admin/login.html');
+    requirePageUser('admin')(req, res, next);
 });
 app.use('/admin', express.static(path.resolve(__dirname, '..', 'admin'), { index: 'index.html' }));
 app.use(['/server', '/database', '/node_modules'], (_req, res) => res.status(404).send('Page not found.'));

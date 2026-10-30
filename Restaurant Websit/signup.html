@@ -11,6 +11,11 @@
     <header class="site-header"><a class="brand" href="index.html">Midnight Bistro</a><nav aria-label="Primary navigation"><ul><li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="login.html">Login</a></li><li><a href="signup.html" aria-current="page">Sign Up</a></li></ul></nav></header>
     <main class="page-main auth-main"><form class="form-panel auth-panel" data-auth-form="register" novalidate>
         <p class="eyebrow">Join us at the table</p><h1>Create Account</h1>
+        <a class="google-auth-button" href="/api/auth/google/start?flow=signup" data-google-button>
+            <span class="google-auth-button__mark" aria-hidden="true">G</span>
+            <span>Sign up with Google</span>
+        </a>
+        <p class="auth-divider"><span>or create an account with email</span></p>
         <label for="signup-name">Full name</label><input id="signup-name" name="fullName" autocomplete="name" required minlength="2" maxlength="120">
         <label for="signup-email">Email address</label><input id="signup-email" name="email" type="email" autocomplete="email" required maxlength="254">
         <label for="signup-password">Password</label><input id="signup-password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="128" aria-describedby="password-help">
