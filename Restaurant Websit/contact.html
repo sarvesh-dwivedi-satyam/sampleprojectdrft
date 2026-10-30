@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Contact Midnight Bistro for restaurant enquiries and reservation assistance.">
+    <title>Contact | Midnight Bistro</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="pages.css">
+    <script src="scripts/site.js" defer></script><script src="scripts/forms.js" defer></script>
+</head>
+<body>
+    <header class="site-header"><a class="brand" href="index.html">Midnight Bistro</a><nav aria-label="Primary navigation"><ul>
+        <li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="contact.html" aria-current="page">Contact</a></li><li><a href="login.html">Login</a></li><li><a href="signup.html">Sign Up</a></li><li><a href="cart.html">Cart <span data-cart-count>0</span></a></li>
+    </ul></nav></header>
+    <main class="page-main">
+        <section class="page-intro"><p class="eyebrow">We would love to hear from you</p><h1>Contact Us</h1><p>For table enquiries, celebrations, and general questions, send our team a message.</p></section>
+        <section class="content-grid contact-layout">
+            <form class="form-panel" data-contact-form novalidate>
+                <h2>Send an enquiry</h2>
+                <label for="contact-name">Full name</label><input id="contact-name" name="name" autocomplete="name" required minlength="2" maxlength="120">
+                <label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254">
+                <label for="contact-phone">Phone (optional)</label><input id="contact-phone" name="phone" type="tel" autocomplete="tel" maxlength="30">
+                <label for="contact-message">Message</label><textarea id="contact-message" name="message" rows="5" required minlength="10" maxlength="2000"></textarea>
+                <button class="button button--primary" type="submit">Send Enquiry</button>
+                <p class="notice" data-form-status role="status" aria-live="polite"></p>
+            </form>
+            <div class="content-panel">
+                <h2>Visit Midnight Bistro</h2>
+                <address>Restaurant address to be confirmed<br>Phone: to be confirmed<br>Email: to be confirmed</address>
+                <h3>Opening hours</h3><p>Days and hours to be confirmed.</p>
+                <h3>Find us</h3><div class="map-placeholder" role="img" aria-label="Map placeholder; restaurant location will be added when confirmed">Restaurant map will be added when the address is confirmed.</div>
+                <p>Instagram and Facebook links coming soon.</p>
+            </div>
+        </section>
+    </main>
+    <footer class="site-footer"><a class="brand" href="index.html">Midnight Bistro</a><nav aria-label="Footer navigation"><ul><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="reservation.html">Reservations</a></li></ul></nav><p><small>&copy; 2026 Midnight Bistro.</small></p></footer>
+</body>
+</html>

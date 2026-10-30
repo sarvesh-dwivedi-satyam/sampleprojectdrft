@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Create a Midnight Bistro account to manage your orders and reservations.">
+    <title>Create Account | Midnight Bistro</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="pages.css">
+    <script src="scripts/site.js" defer></script><script src="scripts/auth.js" defer></script>
+</head>
+<body>
+    <header class="site-header"><a class="brand" href="index.html">Midnight Bistro</a><nav aria-label="Primary navigation"><ul><li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="login.html">Login</a></li><li><a href="signup.html" aria-current="page">Sign Up</a></li></ul></nav></header>
+    <main class="page-main auth-main"><form class="form-panel auth-panel" data-auth-form="register" novalidate>
+        <p class="eyebrow">Join us at the table</p><h1>Create Account</h1>
+        <label for="signup-name">Full name</label><input id="signup-name" name="fullName" autocomplete="name" required minlength="2" maxlength="120">
+        <label for="signup-email">Email address</label><input id="signup-email" name="email" type="email" autocomplete="email" required maxlength="254">
+        <label for="signup-password">Password</label><input id="signup-password" name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="128" aria-describedby="password-help">
+        <small id="password-help">Use at least 12 characters.</small>
+        <label for="signup-confirm">Confirm password</label><input id="signup-confirm" name="confirmPassword" type="password" autocomplete="new-password" required minlength="12" maxlength="128">
+        <button class="button button--primary" type="submit">Create Account</button>
+        <p class="notice" data-form-status role="status" aria-live="polite"></p><p>Already registered? <a href="login.html">Login</a></p>
+    </form></main>
+    <footer class="site-footer"><a class="brand" href="index.html">Midnight Bistro</a><p><small>&copy; 2026 Midnight Bistro.</small></p></footer>
+</body>
+</html>

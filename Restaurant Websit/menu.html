@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Explore the Midnight Bistro menu of Indian favourites, tandoor dishes, biryani, desserts, and more.">
+    <title>Menu | Midnight Bistro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pages.css">
+    <script src="scripts/site.js" defer></script>
+    <script src="scripts/menu.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="index.html">Midnight Bistro</a>
+        <nav aria-label="Primary navigation"><ul>
+            <li><a href="index.html">Home</a></li><li><a href="menu.html" aria-current="page">Menu</a></li>
+            <li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li>
+            <li><a href="login.html">Login</a></li><li><a href="signup.html">Sign Up</a></li>
+            <li><a href="cart.html">Cart <span data-cart-count>0</span></a></li>
+        </ul></nav>
+    </header>
+    <main class="page-main">
+        <section class="page-intro">
+            <p class="eyebrow">Thoughtfully prepared, warmly served</p>
+            <h1>Our Menu</h1>
+            <p>Discover Indian favourites and bistro classics. Prices are illustrative sample prices and must be confirmed by the restaurant.</p>
+        </section>
+        <section aria-labelledby="menu-controls-heading">
+            <h2 id="menu-controls-heading">Find your favourite</h2>
+            <form class="filter-bar" id="menu-filters">
+                <label>Search dishes<input name="search" type="search" placeholder="Try paneer or biryani"></label>
+                <label>Category<select name="category"><option value="">All categories</option></select></label>
+                <label>Diet<select name="diet"><option value="">All dishes</option><option value="vegetarian">Vegetarian</option><option value="non-vegetarian">Non-vegetarian</option></select></label>
+                <label>Sort<select name="sort"><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name</option></select></label>
+            </form>
+            <p class="notice" data-menu-status role="status" aria-live="polite">Loading menu…</p>
+            <ul class="menu-grid" data-menu-items aria-label="Menu items"></ul>
+        </section>
+    </main>
+    <footer class="site-footer">
+        <a class="brand" href="index.html">Midnight Bistro</a>
+        <nav aria-label="Footer navigation"><ul><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="reservation.html">Reservations</a></li></ul></nav>
+        <p>Restaurant address and hours to be confirmed.</p>
+        <p><small>&copy; 2026 Midnight Bistro.</small></p>
+    </footer>
+</body>
+</html>
