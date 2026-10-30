@@ -396,9 +396,9 @@ body > header nav a[aria-current="page"] {
     text-align: center;
 }
 
-.special-offers {
+body > main > .special-offers {
     padding: var(--space-5);
-    border: 1px solid var(--color-border-strong) !important;
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-large);
     background:
         linear-gradient(110deg, rgb(88 27 37 / 42%), transparent 72%),
