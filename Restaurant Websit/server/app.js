@@ -118,7 +118,7 @@ app.use('/admin', (req, res, next) => {
 });
 app.use('/admin', express.static(path.resolve(__dirname, '..', 'admin'), { index: 'index.html' }));
 app.use(['/server', '/database', '/node_modules'], (_req, res) => res.status(404).send('Page not found.'));
-app.use(['/tests', '/package.json', '/README.md', '/.env.example', '/.gitignore'], (_req, res) => res.status(404).send('Page not found.'));
+app.use(['/tests', '/package.json', '/README.md', '/GOOGLE_AUTH_SETUP.md', '/.env.example', '/.gitignore'], (_req, res) => res.status(404).send('Page not found.'));
 app.use(express.static(path.resolve(__dirname, '..'), {
     extensions: ['html'],
     index: 'index.html',

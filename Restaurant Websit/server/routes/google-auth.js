@@ -27,6 +27,7 @@ const safeRedirect = (res, flow, error) => {
 function clearAttempt(session) {
     delete session.googleState;
     delete session.googleNonce;
+    delete session.googleCodeVerifier;
     delete session.googleFlow;
     delete session.googleLinkUserId;
 }
@@ -43,8 +44,8 @@ function beginSession(req, user) {
 }
 
 router.get('/start', googleLimiter, (req, res, next) => {
+    const flow = String(req.query.flow || 'login');
     try {
-        const flow = String(req.query.flow || 'login');
         if (!['login', 'signup', 'link'].includes(flow)) {
             return res.status(400).json({ error: 'Invalid Google sign-in request.' });
         }
@@ -53,8 +54,11 @@ router.get('/start', googleLimiter, (req, res, next) => {
         }
         const state = crypto.randomBytes(32).toString('base64url');
         const nonce = crypto.randomBytes(32).toString('base64url');
+        const codeVerifier = crypto.randomBytes(32).toString('base64url');
+        const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
         req.session.googleState = state;
         req.session.googleNonce = nonce;
+        req.session.googleCodeVerifier = codeVerifier;
         req.session.googleFlow = flow;
         req.session.googleLinkUserId = flow === 'link' ? String(req.session.customer.id) : null;
         const authorizationUrl = google.getClient().generateAuthUrl({
@@ -62,6 +66,8 @@ router.get('/start', googleLimiter, (req, res, next) => {
             scope: ['openid', 'email', 'profile'],
             state,
             nonce,
+            code_challenge: codeChallenge,
+            code_challenge_method: 'S256',
             access_type: 'online',
             prompt: 'select_account'
         });
@@ -70,7 +76,7 @@ router.get('/start', googleLimiter, (req, res, next) => {
             res.redirect(authorizationUrl);
         });
     } catch (error) {
-    if (error.status === 503) return safeRedirect(res, flow, 'google-not-configured');
+        if (error.status === 503) return safeRedirect(res, flow, 'google-not-configured');
         next(error);
     }
 });
@@ -92,8 +98,9 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
     const flow = req.session?.googleFlow;
     const stateMatches = google.constantTimeEqual(req.query.state, req.session?.googleState);
     const expectedNonce = req.session?.googleNonce;
+    const codeVerifier = req.session?.googleCodeVerifier;
     const linkUserId = req.session?.googleLinkUserId;
-    if (!flow || !expectedNonce || !stateMatches) {
+    if (!flow || !expectedNonce || !codeVerifier || !stateMatches) {
         if (req.session) clearAttempt(req.session);
         return safeRedirect(res, flow, 'google-state-invalid');
     }
@@ -109,7 +116,8 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
         try {
             const { tokens } = await client.getToken({
                 code: req.query.code,
-                redirect_uri: process.env.GOOGLE_CALLBACK_URL
+                redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+                codeVerifier
             });
             if (typeof tokens.id_token !== 'string') return safeRedirect(res, flow, 'google-login-failed');
             const ticket = await client.verifyIdToken({
