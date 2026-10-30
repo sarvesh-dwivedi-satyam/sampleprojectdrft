@@ -56,9 +56,10 @@ router.get('/menu', asyncRoute(async (req, res) => {
 }));
 
 router.post('/auth/register', registrationLimiter, verifyCsrf, asyncRoute(async (req, res) => {
-    const fullName = String(req.body.fullName || '').trim();
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const password = String(req.body.password || '');
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const fullName = String(body.fullName || '').trim();
+    const email = String(body.email || '').trim().toLowerCase();
+    const password = String(body.password || '');
     if (fullName.length < 2 || fullName.length > 120 || email.length > 254 || !emailPattern.test(email) || password.length < 12 || password.length > 128) {
         return res.status(400).json({ error: 'Enter a name, valid email, and password with at least 12 characters.' });
     }
@@ -80,8 +81,9 @@ router.post('/auth/register', registrationLimiter, verifyCsrf, asyncRoute(async 
 }));
 
 router.post('/auth/login', loginLimiter, verifyCsrf, asyncRoute(async (req, res) => {
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const password = String(req.body.password || '');
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const email = String(body.email || '').trim().toLowerCase();
+    const password = String(body.password || '');
     if (email.length > 254 || !emailPattern.test(email) || !password || password.length > 128) {
         return res.status(401).json({ error: 'Email or password is incorrect.' });
     }
@@ -96,7 +98,7 @@ router.post('/auth/login', loginLimiter, verifyCsrf, asyncRoute(async (req, res)
     if (!valid) return res.status(401).json({ error: 'Email or password is incorrect.' });
     await new Promise((resolve, reject) => req.session.regenerate((error) => error ? reject(error) : resolve()));
     req.session.customer = publicCustomer(customer);
-    req.session.cookie.maxAge = req.body.remember === true ? 1000 * 60 * 60 * 24 * 30 : 1000 * 60 * 60 * 8;
+    req.session.cookie.maxAge = body.remember === true ? 1000 * 60 * 60 * 24 * 30 : 1000 * 60 * 60 * 8;
     res.json({ customer: req.session.customer });
 }));
 
@@ -105,9 +107,10 @@ router.get('/auth/me', (req, res) => {
 });
 
 router.patch('/auth/profile', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
-    const fullName = String(req.body.fullName || '').trim();
-    const email = String(req.body.email || '').trim().toLowerCase();
-    const currentPassword = String(req.body.currentPassword || '');
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const fullName = String(body.fullName || '').trim();
+    const email = String(body.email || '').trim().toLowerCase();
+    const currentPassword = String(body.currentPassword || '');
     if (fullName.length < 2 || fullName.length > 120 || !emailPattern.test(email) || email.length > 254 ||
         currentPassword.length < 1 || currentPassword.length > 128) {
         return res.status(400).json({ error: 'Enter a valid name, email, and current password.' });
@@ -132,7 +135,8 @@ router.patch('/auth/profile', requireAuth, verifyCsrf, asyncRoute(async (req, re
 }));
 
 router.post('/auth/password-reset', loginLimiter, verifyCsrf, asyncRoute(async (req, res) => {
-    const email = String(req.body.email || '').trim().toLowerCase();
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const email = String(body.email || '').trim().toLowerCase();
     if (email.length > 254 || !emailPattern.test(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
     if (!process.env.SMTP_HOST || !process.env.SMTP_FROM) {
         return res.status(503).json({ error: 'Password reset email is not configured. Contact the restaurant for assistance.' });
@@ -165,8 +169,9 @@ router.post('/auth/password-reset', loginLimiter, verifyCsrf, asyncRoute(async (
 }));
 
 router.post('/auth/password-reset/confirm', loginLimiter, verifyCsrf, asyncRoute(async (req, res) => {
-    const token = String(req.body.token || '');
-    const password = String(req.body.password || '');
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const token = String(body.token || '');
+    const password = String(body.password || '');
     if (token.length < 32 || token.length > 200 || password.length < 12 || password.length > 128) {
         return res.status(400).json({ error: 'The reset link or new password is invalid.' });
     }

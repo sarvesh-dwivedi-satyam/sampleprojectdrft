@@ -8,6 +8,7 @@
         'google-state-invalid': 'That Google sign-in request expired or could not be verified. Please try again.',
         'google-login-failed': 'Google sign-in could not be completed. Please try again.',
         'google-account-conflict': 'This Google account could not be linked because it is already associated with another account.',
+        'google-not-configured': 'Google sign-in is not configured on this server yet. Use email and password instead.',
         'google-email-mismatch': 'To link Google, sign in with a Google account that uses the same verified email address.',
         'google-link-session-expired': 'Your sign-in session expired before account linking completed. Please try again.',
         'account-disabled': 'This account is currently unavailable. Please contact the restaurant.',

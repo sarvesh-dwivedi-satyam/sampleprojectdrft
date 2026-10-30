@@ -70,7 +70,7 @@ router.get('/start', googleLimiter, (req, res, next) => {
             res.redirect(authorizationUrl);
         });
     } catch (error) {
-        if (error.status === 503) return res.status(503).json({ error: error.message });
+    if (error.status === 503) return safeRedirect(res, flow, 'google-not-configured');
         next(error);
     }
 });
@@ -82,6 +82,10 @@ router.get('/pending', (req, res) => {
         return res.status(410).json({ error: 'Google account verification expired. Start Google sign-in again.' });
     }
     res.json({ email: pending.email });
+});
+
+router.get('/status', (_req, res) => {
+    res.json({ configured: google.isConfigured() });
 });
 
 router.get('/callback', googleLimiter, async (req, res, next) => {
@@ -101,16 +105,22 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
 
     try {
         const client = google.getClient();
-        const { tokens } = await client.getToken({
-            code: req.query.code,
-            redirect_uri: process.env.GOOGLE_CALLBACK_URL
-        });
-        if (typeof tokens.id_token !== 'string') return safeRedirect(res, flow, 'google-login-failed');
-        const ticket = await client.verifyIdToken({
-            idToken: tokens.id_token,
-            audience: process.env.GOOGLE_CLIENT_ID
-        });
-        const identity = google.validateIdentity(ticket.getPayload(), expectedNonce);
+        let identity;
+        try {
+            const { tokens } = await client.getToken({
+                code: req.query.code,
+                redirect_uri: process.env.GOOGLE_CALLBACK_URL
+            });
+            if (typeof tokens.id_token !== 'string') return safeRedirect(res, flow, 'google-login-failed');
+            const ticket = await client.verifyIdToken({
+                idToken: tokens.id_token,
+                audience: process.env.GOOGLE_CLIENT_ID
+            });
+            identity = google.validateIdentity(ticket.getPayload(), expectedNonce);
+        } catch (verificationError) {
+            console.error('Google OpenID Connect verification failed:', verificationError.message);
+            return safeRedirect(res, flow, 'google-login-failed');
+        }
 
         if (flow === 'link') {
             if (!req.session.customer || String(req.session.customer.id) !== String(linkUserId)) {
@@ -195,7 +205,8 @@ router.post('/link', googleLimiter, verifyCsrf, async (req, res, next) => {
         delete req.session.pendingGoogleLink;
         return res.status(410).json({ error: 'Google account verification expired. Start Google sign-in again.' });
     }
-    const password = String(req.body.password || '');
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const password = String(body.password || '');
     if (!password || password.length > 128) {
         return res.status(400).json({ error: 'Enter the password for your existing account to link Google securely.' });
     }
