@@ -112,8 +112,8 @@ router.patch('/auth/profile', requireAuth, verifyCsrf, asyncRoute(async (req, re
     const email = String(body.email || '').trim().toLowerCase();
     const currentPassword = String(body.currentPassword || '');
     if (fullName.length < 2 || fullName.length > 120 || !emailPattern.test(email) || email.length > 254 ||
-        currentPassword.length < 1 || currentPassword.length > 128) {
-        return res.status(400).json({ error: 'Enter a valid name, email, and current password.' });
+        currentPassword.length > 128) {
+        return res.status(400).json({ error: 'Enter a valid name and email. Password accounts must also provide the current password.' });
     }
     const account = await pool.query('SELECT password_hash, is_active FROM users WHERE id = $1', [req.session.customer.id]);
     if (!account.rowCount || !account.rows[0].is_active ||

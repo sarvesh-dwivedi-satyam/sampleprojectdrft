@@ -3,7 +3,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const pool = require('../config/database');
-const { requireAuth, verifyCsrf } = require('../middleware/security');
+const { verifyCsrf } = require('../middleware/security');
 const google = require('../services/google-auth');
 const { classifyGoogleAccount } = require('../services/google-account');
 
