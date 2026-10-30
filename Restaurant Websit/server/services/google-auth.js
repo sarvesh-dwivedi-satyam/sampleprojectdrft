@@ -1,4 +1,5 @@
 const { OAuth2Client } = require('google-auth-library');
+const crypto = require('node:crypto');
 
 const ISSUERS = new Set(['accounts.google.com', 'https://accounts.google.com']);
 
@@ -27,7 +28,7 @@ function constantTimeEqual(left, right) {
     if (typeof left !== 'string' || typeof right !== 'string') return false;
     const leftBuffer = Buffer.from(left);
     const rightBuffer = Buffer.from(right);
-    return leftBuffer.length === rightBuffer.length && require('node:crypto').timingSafeEqual(leftBuffer, rightBuffer);
+    return leftBuffer.length === rightBuffer.length && crypto.timingSafeEqual(leftBuffer, rightBuffer);
 }
 
 function validateIdentity(payload, expectedNonce) {

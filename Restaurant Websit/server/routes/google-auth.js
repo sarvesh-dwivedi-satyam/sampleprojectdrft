@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const pool = require('../config/database');
 const { requireAuth, verifyCsrf } = require('../middleware/security');
 const google = require('../services/google-auth');
+const { classifyGoogleAccount } = require('../services/google-account');
 
 const router = express.Router();
 const googleLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false });
@@ -156,22 +157,22 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
             'SELECT id, full_name, email, role, password_hash, google_id, auth_provider, is_active FROM users WHERE email = $1',
             [identity.email]
         );
-        if (account.rowCount) {
-            const user = account.rows[0];
-            if (!user.is_active) return safeRedirect(res, flow, 'account-disabled');
-            if (user.google_id && user.google_id !== identity.googleId) {
-                return safeRedirect(res, flow, 'google-account-conflict');
-            }
-            if (user.password_hash) {
-                req.session.pendingGoogleLink = {
-                    ...identity,
-                    expiresAt: Date.now() + 10 * 60 * 1000
-                };
-                req.session.cookie.maxAge = 10 * 60 * 1000;
-                await new Promise((resolve, reject) => req.session.save((error) => error ? reject(error) : resolve()));
-                return res.redirect('/login.html?googleLink=required');
-            }
+        const accountResolution = classifyGoogleAccount(account.rows[0], identity);
+        if (accountResolution === 'disabled') {
+            return safeRedirect(res, flow, 'account-disabled');
+        }
+        if (accountResolution === 'conflict') {
             return safeRedirect(res, flow, 'google-account-conflict');
+        }
+        if (accountResolution === 'verify-password') {
+            const user = account.rows[0];
+            req.session.pendingGoogleLink = {
+                ...identity,
+                expiresAt: Date.now() + 10 * 60 * 1000
+            };
+            req.session.cookie.maxAge = 10 * 60 * 1000;
+            await new Promise((resolve, reject) => req.session.save((error) => error ? reject(error) : resolve()));
+            return res.redirect('/login.html?googleLink=required');
         }
 
         const created = await pool.query(

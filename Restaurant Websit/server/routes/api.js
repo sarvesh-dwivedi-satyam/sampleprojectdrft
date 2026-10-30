@@ -42,7 +42,6 @@ const validImageUrl = (value) => {
 
 router.get('/csrf', (req, res) => {
     if (!req.session.csrfToken) {
-        const crypto = require('node:crypto');
         req.session.csrfToken = crypto.randomBytes(32).toString('hex');
     }
     res.json({ csrfToken: req.session.csrfToken });
