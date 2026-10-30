@@ -174,22 +174,26 @@
             cell(row, order.payment_status);
             cell(row, order.status);
             const field = document.createElement('td');
-            const select = document.createElement('select');
-            select.setAttribute('aria-label', `Update order ${order.id} status`);
-            ['confirmed', 'preparing', 'ready', 'completed', 'cancelled'].forEach((state) => {
-                const option = document.createElement('option');
-                option.value = state;
-                option.textContent = state;
-                option.selected = state === order.status;
-                select.append(option);
-            });
-            select.addEventListener('change', async () => {
-                try {
-                    await window.Midnight.api(`/api/admin/orders/${order.id}`, { method: 'PATCH', body: JSON.stringify({ status: select.value }) });
-                    status.textContent = `Order ${order.id} updated.`;
-                } catch (error) { status.textContent = error.message; }
-            });
-            field.append(select);
+            if (order.payment_status === 'paid') {
+                const select = document.createElement('select');
+                select.setAttribute('aria-label', `Update order ${order.id} status`);
+                ['confirmed', 'preparing', 'ready', 'completed', 'cancelled'].forEach((state) => {
+                    const option = document.createElement('option');
+                    option.value = state;
+                    option.textContent = state;
+                    option.selected = state === order.status;
+                    select.append(option);
+                });
+                select.addEventListener('change', async () => {
+                    try {
+                        await window.Midnight.api(`/api/admin/orders/${order.id}`, { method: 'PATCH', body: JSON.stringify({ status: select.value }) });
+                        status.textContent = `Order ${order.id} updated.`;
+                    } catch (error) { status.textContent = error.message; }
+                });
+                field.append(select);
+            } else {
+                field.textContent = 'Available after payment is captured';
+            }
             row.append(field);
             target.append(row);
         }

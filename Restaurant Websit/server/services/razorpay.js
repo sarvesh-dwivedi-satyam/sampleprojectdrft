@@ -1,12 +1,15 @@
 const crypto = require('node:crypto');
 
 function configured() {
-    return Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+    return Boolean(
+        process.env.RAZORPAY_KEY_ID?.startsWith('rzp_test_') &&
+        process.env.RAZORPAY_KEY_SECRET
+    );
 }
 
 function createClient() {
     if (!configured()) {
-        const error = new Error('Online payment is not configured. Contact the restaurant to complete this order.');
+        const error = new Error('Online payment requires Razorpay test-mode credentials. Contact the restaurant to complete this order.');
         error.status = 503;
         throw error;
     }

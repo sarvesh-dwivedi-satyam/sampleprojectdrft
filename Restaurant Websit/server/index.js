@@ -5,6 +5,9 @@ if (!process.env.SESSION_SECRET || Buffer.byteLength(process.env.SESSION_SECRET)
 if (process.env.NODE_ENV === 'production' && process.env.SESSION_COOKIE_SECURE !== 'true') {
     throw new Error('Set SESSION_COOKIE_SECURE=true when NODE_ENV=production.');
 }
+if (process.env.RAZORPAY_KEY_ID && !process.env.RAZORPAY_KEY_ID.startsWith('rzp_test_')) {
+    throw new Error('Only Razorpay test-mode keys are supported; live payment keys are disabled.');
+}
 try {
     new Intl.DateTimeFormat('en-CA', { timeZone: process.env.BUSINESS_TIME_ZONE || 'Asia/Kolkata' }).format(new Date());
 } catch {

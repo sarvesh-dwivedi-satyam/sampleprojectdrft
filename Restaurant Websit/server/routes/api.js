@@ -215,10 +215,11 @@ router.post('/auth/logout', verifyCsrf, (req, res, next) => {
 });
 
 router.post('/contact', contactLimiter, verifyCsrf, asyncRoute(async (req, res) => {
-    const name = String(req.body.name || '').trim();
-    const email = String(req.body.email || '').trim();
-    const phone = String(req.body.phone || '').trim();
-    const message = String(req.body.message || '').trim();
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const name = String(body.name || '').trim();
+    const email = String(body.email || '').trim();
+    const phone = String(body.phone || '').trim();
+    const message = String(body.message || '').trim();
     if (name.length < 2 || name.length > 120 || !emailPattern.test(email) || email.length > 254 ||
         phone.length > 30 || message.length < 10 || message.length > 2000) {
         return res.status(400).json({ error: 'Check the contact form and try again.' });
@@ -243,8 +244,9 @@ router.post('/contact', contactLimiter, verifyCsrf, asyncRoute(async (req, res) 
 }));
 
 router.post('/reservations', reservationLimiter, verifyCsrf, asyncRoute(async (req, res) => {
-    const { guestName, guestEmail, guestPhone, date, time, notes = '' } = req.body;
-    const guestCount = Number(req.body.guestCount);
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const { guestName, guestEmail, guestPhone, date, time, notes = '' } = body;
+    const guestCount = Number(body.guestCount);
     const parsedDate = new Date(`${date}T00:00:00Z`);
     const dateIsValid = /^\d{4}-\d{2}-\d{2}$/.test(date || '') &&
         !Number.isNaN(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === date;
@@ -332,8 +334,9 @@ router.post('/orders', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
     if (process.env.PRICING_CONFIRMED !== 'true') {
         return res.status(503).json({ error: 'Ordering is disabled until the restaurant confirms tax and delivery pricing. No order was placed.' });
     }
-    const lines = req.body.items;
-    const address = String(req.body.address || '').trim();
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const lines = body.items;
+    const address = String(body.address || '').trim();
     if (!Array.isArray(lines) || lines.length < 1 || lines.length > 30 || address.length < 10 || address.length > 1000) {
         return res.status(400).json({ error: 'Provide order items and a complete delivery address.' });
     }
@@ -398,7 +401,8 @@ router.post('/orders', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
 }));
 
 router.post('/payments/verify', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
-    const { orderId, paymentId, signature } = req.body;
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const { orderId, paymentId, signature } = body;
     if (![orderId, paymentId, signature].every((value) => typeof value === 'string' && value.length < 256) ||
         !payment.verifyPaymentSignature(orderId, paymentId, signature)) {
         return res.status(400).json({ error: 'Payment verification failed.' });
@@ -483,7 +487,8 @@ router.get('/admin/menu', requireAuth, requireAdmin, asyncRoute(async (_req, res
 }));
 
 router.post('/admin/menu', requireAuth, requireAdmin, verifyCsrf, asyncRoute(async (req, res) => {
-    const { name, description, category, priceRupees, imageUrl = '', vegetarian = true, featured = false } = req.body;
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const { name, description, category, priceRupees, imageUrl = '', vegetarian = true, featured = false } = body;
     const pricePaise = Math.round(Number(priceRupees) * 100);
     if (typeof name !== 'string' || name.trim().length < 2 || name.length > 120 ||
         typeof description !== 'string' || description.length > 500 ||
@@ -501,7 +506,8 @@ router.post('/admin/menu', requireAuth, requireAdmin, verifyCsrf, asyncRoute(asy
 }));
 
 router.patch('/admin/menu/:id', requireAuth, requireAdmin, verifyCsrf, asyncRoute(async (req, res) => {
-    const { name, description, category, priceRupees, imageUrl, vegetarian, featured, available } = req.body;
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const { name, description, category, priceRupees, imageUrl, vegetarian, featured, available } = body;
     const pricePaise = Math.round(Number(priceRupees) * 100);
     if (typeof name !== 'string' || name.trim().length < 2 || name.length > 120 ||
         typeof description !== 'string' || description.length > 500 || !allowedCategories.has(category) ||
@@ -535,11 +541,12 @@ router.get('/admin/orders', requireAuth, requireAdmin, asyncRoute(async (_req, r
 
 router.patch('/admin/orders/:id', requireAuth, requireAdmin, verifyCsrf, asyncRoute(async (req, res) => {
     const allowed = new Set(['confirmed', 'preparing', 'ready', 'completed', 'cancelled']);
-    if (!allowed.has(req.body.status)) return res.status(400).json({ error: 'Invalid order status.' });
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    if (!allowed.has(body.status)) return res.status(400).json({ error: 'Invalid order status.' });
     const result = await pool.query(
         `UPDATE orders SET status = $1, updated_at = now()
          WHERE id = $2 AND payment_status = 'paid' RETURNING id, status`,
-        [req.body.status, req.params.id]
+        [body.status, req.params.id]
     );
     if (!result.rowCount) return res.status(404).json({ error: 'Paid order not found.' });
     res.json({ order: result.rows[0] });
@@ -554,12 +561,13 @@ router.get('/admin/reservations', requireAuth, requireAdmin, asyncRoute(async (_
 }));
 
 router.patch('/admin/reservations/:id', requireAuth, requireAdmin, verifyCsrf, asyncRoute(async (req, res) => {
-    if (!['confirmed', 'cancelled', 'completed'].includes(req.body.status)) {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    if (!['confirmed', 'cancelled', 'completed'].includes(body.status)) {
         return res.status(400).json({ error: 'Invalid reservation status.' });
     }
     const result = await pool.query(
         'UPDATE reservations SET status = $1 WHERE id = $2 RETURNING id, status',
-        [req.body.status, req.params.id]
+        [body.status, req.params.id]
     );
     if (!result.rowCount) return res.status(404).json({ error: 'Reservation not found.' });
     res.json({ reservation: result.rows[0] });
@@ -578,7 +586,7 @@ router.post('/payments/webhook', asyncRoute(async (req, res) => {
     if (!payment.verifyWebhookSignature(req.rawBody || Buffer.alloc(0), req.get('x-razorpay-signature'))) {
         return res.status(400).json({ error: 'Invalid webhook signature.' });
     }
-    const event = req.body;
+    const event = req.body && typeof req.body === 'object' ? req.body : {};
     const eventId = req.get('x-razorpay-event-id');
     if (typeof eventId !== 'string' || eventId.length > 255) {
         return res.status(400).json({ error: 'Webhook event identifier is required.' });
@@ -608,6 +616,14 @@ router.post('/payments/webhook', asyncRoute(async (req, res) => {
                 `UPDATE orders SET payment_status = 'failed', status = 'payment_failed', updated_at = now()
                  WHERE payment_order_id = $1 AND payment_status = 'pending'`,
                 [gatewayOrderId]
+            );
+        }
+        if (typeof gatewayOrderId === 'string') {
+            await client.query(
+                `UPDATE payment_events
+                 SET order_id = (SELECT id FROM orders WHERE payment_order_id = $1)
+                 WHERE provider_event_id = $2`,
+                [gatewayOrderId, eventId]
             );
         }
         await client.query('COMMIT');

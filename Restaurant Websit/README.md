@@ -6,8 +6,25 @@ Midnight Bistro is a vanilla HTML/CSS/JavaScript restaurant website backed by an
 
 - Node.js 22 or newer and npm.
 - PostgreSQL 16 or newer.
+- The application uses the `pg` driver and parameterized SQL; there is no Prisma schema or migration runner in this project.
+- Password hashes currently use `bcryptjs`; Argon2 is not configured.
 - Optional SMTP credentials for contact enquiries and password reset emails.
 - Optional Razorpay test credentials for online checkout.
+
+## Project structure
+
+```text
+admin/                 Role-protected administrator pages and dashboard code
+database/schema.sql    PostgreSQL schema and sample-menu seed
+scripts/               Browser-side API, authentication, menu, cart, and form logic
+server/config/         PostgreSQL connection pool
+server/middleware/     CSRF, customer, and admin authorization
+server/routes/         Authentication, restaurant, payment, and admin APIs
+server/services/       Pricing, Google identity, and Razorpay helpers
+server/scripts/        Database initialization and one-time admin setup
+tests/                 Node.js unit tests
+*.html, *.css          Public pages and responsive visual styles
+```
 
 ## Local setup (PowerShell)
 
@@ -48,21 +65,24 @@ The administrator setup command requires an existing database schema. It does no
 
 See `.env.example` for the complete variable list.
 For Google Cloud OAuth client creation, callback/origin setup, and account-link behavior, see `GOOGLE_AUTH_SETUP.md`.
+For the actual PostgreSQL schema and setup process, see `DATABASE_SETUP.md`. For the implemented API routes and request shapes, see `API_DOCUMENTATION.md`.
 
 - **Sessions:** stored in PostgreSQL, HTTP-only, same-site cookies, session IDs rotated after successful login/registration, and secure cookies required in production.
 - **Accounts:** stored in the `users` table. Existing installations with a `customers` table are migrated by renaming it when `npm run db:init` runs. Password-only accounts require password verification before adding a Google identity.
 - **Google sign-in:** optional server-side OpenID Connect. Configure all three `GOOGLE_*` variables to enable it; without credentials, traditional email/password authentication remains available.
-- **Database:** the schema is in `database/schema.sql`. It includes seeded sample dishes and a session store created by the PostgreSQL session adapter.
+- **Database:** the schema is in `database/schema.sql`. It includes seeded sample dishes and a session store created by the PostgreSQL session adapter. This is a raw PostgreSQL implementation, not Prisma.
 - **Reservations:** guest requests are persisted and serialized per date/time slot; the default capacity of 40 is a placeholder and must be replaced with actual table/slot policy.
 - **Reservation time zone:** `BUSINESS_TIME_ZONE` defaults to `Asia/Kolkata`; set the verified restaurant time zone.
 - **Orders:** prices and totals are calculated from current database menu prices on the server. `TAX_RATE_BASIS_POINTS=0` and `DELIVERY_FEE_PAISE=0` are intentionally neutral placeholders. Ordering remains disabled until actual rates and rules have been confirmed and `PRICING_CONFIRMED=true` is set.
-- **Payments:** set Razorpay test keys and webhook secret. Configure the provider's webhook URL as `https://your-domain/api/payments/webhook` and subscribe to payment captured/failed events. Only captured payments are treated as paid. Do not use live keys until the business approves production activation.
+- **Payments:** only Razorpay test client IDs (`rzp_test_...`) are accepted; the server rejects live-key configuration. Set test keys and webhook secret, then configure the provider's webhook URL as `https://your-domain/api/payments/webhook` and subscribe to payment captured/failed events. Only captured payments are treated as paid.
 - **Email:** configure SMTP to enable contact email and account reset messages. Without it, those APIs report that the service is unavailable rather than claiming delivery.
 - **Admin:** no public self-service admin registration exists. Use the bootstrap command on a trusted machine.
 
 ## Tests
 
-Run `npm test` for unit tests covering server-side price calculation and Razorpay signature verification. API/database integration tests require a configured PostgreSQL instance and payment/email provider credentials.
+Run `npm test` for unit tests covering server-side price calculation, Razorpay signature verification, Google identity-claim validation, and account-resolution decisions. API/database integration tests require a configured PostgreSQL instance and payment/email provider credentials.
+
+Other package scripts are `npm start`, `npm run dev`, `npm run db:init`, and `npm run admin:create`. There is currently no separate build, lint, or Prisma validation script.
 
 ## Current limitations and launch checklist
 
@@ -70,6 +90,7 @@ Run `npm test` for unit tests covering server-side price calculation and Razorpa
 - Replace `example.com` in `sitemap.xml` and `robots.txt` with the verified production domain.
 - The provided `L1.jpg` is atmospheric artwork, not food photography. Plate and gallery artwork are explicitly styled placeholders; supply licensed restaurant photography.
 - Discount codes, refunds, and newsletter opt-in are not implemented.
+- Separate category, offer, review, payment, contact-message, and newsletter database models are not implemented. Categories are stored as text on menu items; payment state is stored on orders; contact forms are emailed rather than persisted.
 - Customer contact enquiries/password reset need a configured and tested SMTP provider. Verify delivery, SPF/DKIM, and error monitoring.
 - Razorpay is not configured in this project. The integration cannot accept payment until merchant test credentials and webhook configuration exist.
 - The current cart is held in browser local storage; server-side menu pricing and order totals are authoritative, but production delivery availability, tax treatment, discount rules, cancellations/refunds, and order notifications need business rules.
