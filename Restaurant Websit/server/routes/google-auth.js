@@ -105,7 +105,13 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
         return safeRedirect(res, flow, 'google-state-invalid');
     }
     clearAttempt(req.session);
-    if (req.query.error) return safeRedirect(res, flow, 'google-cancelled');
+    if (req.query.error) {
+        return safeRedirect(
+            res,
+            flow,
+            req.query.error === 'access_denied' ? 'google-cancelled' : 'google-login-failed'
+        );
+    }
     if (typeof req.query.code !== 'string' || req.query.code.length > 4096) {
         return safeRedirect(res, flow, 'google-login-failed');
     }
