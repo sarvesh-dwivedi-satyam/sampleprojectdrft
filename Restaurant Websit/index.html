@@ -4,21 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Midnight Bistro | Home</title>
+    <meta name="description" content="Discover Midnight Bistro, where warm Indian hospitality meets an extraordinary dining experience.">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-    <nav>
-        <h3>MIDNIGHT BISTRO</h3> 
-        <a href="index.html">Home</a>
-        <a href="menu.html">Menu</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Contact</a>
-        <a href="login.html">Login</a>
-        <a href="signup.html">Sign Up</a>
-    </nav>
+        <a class="brand" href="index.html">Midnight Bistro</a>
+        <nav aria-label="Primary navigation">
+            <ul>
+                <li><a href="index.html" aria-current="page">Home</a></li>
+                <li><a href="menu.html">Menu</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="signup.html">Sign Up</a></li>
+            </ul>
+        </nav>
     </header>
+
     <main>
-        <h4>Welcome to Midnight Bistro</h4>
+        <section class="hero" aria-labelledby="hero-heading">
+            <div class="hero__content">
+                <p class="eyebrow">Premium experience. Accessible luxury.</p>
+                <h1 id="hero-heading">Where Every Bite Feels Extraordinary</h1>
+                <p>Experience the true warmth of Indian hospitality in our cozy, inviting space, where every dish is a masterpiece of rich flavors and exceptional quality.</p>
+                <p>
+                    <a class="button button--primary" href="menu.html">Explore the Menu</a>
+                    <a class="button button--secondary" href="contact.html">Reserve a Table</a>
+                </p>
+            </div>
+            <figure class="hero__image">
+                <img src="L1.jpg" alt="Atmospheric illustration of a dimly lit setting with glowing orange lights and autumn branches">
+                <figcaption>Midnight Bistro's warm, atmospheric inspiration.</figcaption>
+            </figure>
+        </section>
+
+        <section class="introduction" aria-labelledby="introduction-heading">
+            <h2 id="introduction-heading">A Table for Every Occasion</h2>
+            <p>At Midnight Bistro, thoughtfully prepared food and heartfelt hospitality come together in a welcoming setting. Join us for a relaxed meal, a celebration, or a memorable evening out.</p>
+            <a class="button button--secondary" href="about.html">About Us</a>
+        </section>
+
+        <section class="featured-dishes" aria-labelledby="featured-heading">
+            <h2 id="featured-heading">Featured Dishes</h2>
+            <ul>
+                <li>
+                    <article>
+                        <h3>Featured dish placeholder</h3>
+                        <p>A description of this signature dish will be added when the menu is confirmed.</p>
+                        <p>Price: &#8377; TBD</p>
+                    </article>
+                </li>
+                <li>
+                    <article>
+                        <h3>Featured dish placeholder</h3>
+                        <p>A description of this signature dish will be added when the menu is confirmed.</p>
+                        <p>Price: &#8377; TBD</p>
+                    </article>
+                </li>
+                <li>
+                    <article>
+                        <h3>Featured dish placeholder</h3>
+                        <p>A description of this signature dish will be added when the menu is confirmed.</p>
+                        <p>Price: &#8377; TBD</p>
+                    </article>
+                </li>
+            </ul>
+        </section>
+
+        <section class="food-categories" aria-labelledby="categories-heading">
+            <h2 id="categories-heading">Explore Our Categories</h2>
+            <ul>
+                <li>Indian Starters</li>
+                <li>Main Course</li>
+                <li>Biryani</li>
+                <li>Desserts</li>
+                <li>Beverages</li>
+            </ul>
+            <a class="button button--secondary" href="menu.html">View the full menu</a>
+        </section>
+
+        <section class="special-offers" aria-labelledby="offers-heading">
+            <h2 id="offers-heading">Special Offers</h2>
+            <p>Seasonal offers and dining experiences will be announced here.</p>
+        </section>
+
+        <section class="testimonials" aria-labelledby="testimonials-heading">
+            <h2 id="testimonials-heading">Guest Notes</h2>
+            <p>Sample testimonial content — replace with a verified guest review before publication.</p>
+            <blockquote>
+                <p>“Sample review: The food was wonderful, and the welcoming atmosphere made our evening special.”</p>
+                <footer>— Sample guest</footer>
+            </blockquote>
+        </section>
+
+        <section class="gallery" aria-labelledby="gallery-heading">
+            <h2 id="gallery-heading">A Glimpse of Midnight Bistro</h2>
+            <p>Gallery image placeholders. Replace these paths with approved restaurant photography.</p>
+            <ul>
+                <li>
+                    <figure>
+                        <img src="images/gallery-dining-room.jpg" alt="Placeholder for a photograph of the Midnight Bistro dining room">
+                        <figcaption>Dining room</figcaption>
+                    </figure>
+                </li>
+                <li>
+                    <figure>
+                        <img src="images/gallery-signature-dish.jpg" alt="Placeholder for a photograph of a Midnight Bistro signature dish">
+                        <figcaption>Signature dish</figcaption>
+                    </figure>
+                </li>
+                <li>
+                    <figure>
+                        <img src="images/gallery-hospitality.jpg" alt="Placeholder for a photograph of the Midnight Bistro hospitality experience">
+                        <figcaption>Our hospitality</figcaption>
+                    </figure>
+                </li>
+            </ul>
+        </section>
+
+        <section class="reservation-cta" aria-labelledby="reservation-heading">
+            <h2 id="reservation-heading">Make an Evening of It</h2>
+            <p>For reservation enquiries, contact our team. Online booking is not available yet.</p>
+            <a class="button button--primary" href="contact.html">Contact Us About a Table</a>
+        </section>
     </main>
+
+    <footer>
+        <a class="brand" href="index.html">Midnight Bistro</a>
+        <nav aria-label="Footer navigation">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="menu.html">Menu</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="signup.html">Sign Up</a></li>
+            </ul>
+        </nav>
+        <address>
+            Address: Restaurant address to be confirmed<br>
+            Phone: Phone number to be confirmed<br>
+            Email: Email address to be confirmed
+        </address>
+        <section aria-labelledby="opening-hours-heading">
+            <h2 id="opening-hours-heading">Opening Hours</h2>
+            <p>Opening days and hours to be confirmed.</p>
+        </section>
+        <section aria-labelledby="social-heading">
+            <h2 id="social-heading">Follow Us</h2>
+            <p>Instagram: link coming soon</p>
+            <p>Facebook: link coming soon</p>
+        </section>
+        <p><small>&copy; 2026 Midnight Bistro. All rights reserved.</small></p>
+    </footer>
 </body>
 </html>
