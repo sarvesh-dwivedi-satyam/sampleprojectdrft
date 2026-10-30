@@ -26,7 +26,8 @@ const positiveInt = (value, max = 20) => Number.isInteger(Number(value)) && Numb
 const validImageUrl = (value) => {
     if (value === '') return true;
     try {
-        return ['http:', 'https:'].includes(new URL(value).protocol);
+        const url = new URL(value);
+        return url.protocol === 'https:' && !url.username && !url.password;
     } catch {
         return false;
     }
@@ -314,6 +315,9 @@ router.post('/reservations/:id/cancel', requireAuth, verifyCsrf, asyncRoute(asyn
 router.post('/orders', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
     if (!payment.configured()) {
         return res.status(503).json({ error: 'Online checkout is unavailable until payment credentials are configured. No order was placed.' });
+    }
+    if (process.env.PRICING_CONFIRMED !== 'true') {
+        return res.status(503).json({ error: 'Ordering is disabled until the restaurant confirms tax and delivery pricing. No order was placed.' });
     }
     const lines = req.body.items;
     const address = String(req.body.address || '').trim();

@@ -81,6 +81,10 @@ app.get('/api/health', async (_req, res, next) => {
 app.get('/admin/login.html', (_req, res) => {
     res.sendFile(path.resolve(__dirname, '..', 'admin', 'login.html'));
 });
+app.use(['/profile.html', '/orders.html', '/checkout.html'], (req, res, next) => {
+    if (req.session.customer) return next();
+    res.redirect('/login.html');
+});
 app.use('/admin', (req, res, next) => {
     if (['/login.html', '/admin.js', '/admin.css'].includes(req.path)) return next();
     if (req.session.customer?.role === 'admin') return next();
@@ -88,6 +92,7 @@ app.use('/admin', (req, res, next) => {
 });
 app.use('/admin', express.static(path.resolve(__dirname, '..', 'admin'), { index: 'index.html' }));
 app.use(['/server', '/database', '/node_modules'], (_req, res) => res.status(404).send('Page not found.'));
+app.use(['/tests', '/package.json', '/README.md', '/.env.example', '/.gitignore'], (_req, res) => res.status(404).send('Page not found.'));
 app.use(express.static(path.resolve(__dirname, '..'), {
     extensions: ['html'],
     index: 'index.html',

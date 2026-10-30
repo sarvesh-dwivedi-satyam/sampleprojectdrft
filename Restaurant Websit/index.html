@@ -8,6 +8,15 @@
     <meta property="og:title" content="Midnight Bistro | Luxury Within Every Bite">
     <meta property="og:description" content="Experience warm Indian hospitality and thoughtful dining at Midnight Bistro.">
     <meta property="og:type" content="website">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Restaurant",
+            "name": "Midnight Bistro",
+            "description": "A premium Indian restaurant offering warm hospitality and an inviting bistro atmosphere.",
+            "servesCuisine": "Indian cuisine"
+        }
+    </script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="pages.css">
     <script src="scripts/site.js" defer></script>
@@ -114,11 +123,11 @@
         <section class="food-categories" aria-labelledby="categories-heading">
             <h2 id="categories-heading">Explore Our Categories</h2>
             <ul>
-                <li>Indian Starters</li>
-                <li>Main Course</li>
-                <li>Biryani</li>
-                <li>Desserts</li>
-                <li>Beverages</li>
+                <li><a href="menu.html?category=Indian%20Starters">Indian Starters</a></li>
+                <li><a href="menu.html?category=North%20Indian%20Main%20Course">Main Course</a></li>
+                <li><a href="menu.html?category=Biryani%20and%20Rice">Biryani</a></li>
+                <li><a href="menu.html?category=Desserts">Desserts</a></li>
+                <li><a href="menu.html?category=Beverages">Beverages</a></li>
             </ul>
             <a class="button button--secondary" href="menu.html">View the full menu</a>
         </section>

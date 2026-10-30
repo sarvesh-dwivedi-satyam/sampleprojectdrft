@@ -78,6 +78,8 @@
                 option.textContent = category;
                 select.append(option);
             }
+            const requestedCategory = new URLSearchParams(location.search).get('category');
+            if (categories.has(requestedCategory)) select.value = requestedCategory;
             render();
         })
         .catch((error) => { status.textContent = error.message; });

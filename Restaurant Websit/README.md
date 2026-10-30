@@ -52,7 +52,7 @@ See `.env.example` for the complete variable list.
 - **Database:** the schema is in `database/schema.sql`. It includes seeded sample dishes and a session store created by the PostgreSQL session adapter.
 - **Reservations:** guest requests are persisted and serialized per date/time slot; the default capacity of 40 is a placeholder and must be replaced with actual table/slot policy.
 - **Reservation time zone:** `BUSINESS_TIME_ZONE` defaults to `Asia/Kolkata`; set the verified restaurant time zone.
-- **Orders:** prices and totals are calculated from current database menu prices on the server. `TAX_RATE_BASIS_POINTS=0` and `DELIVERY_FEE_PAISE=0` are intentionally neutral placeholders; confirm tax and delivery rules with the business/accountant before accepting orders.
+- **Orders:** prices and totals are calculated from current database menu prices on the server. `TAX_RATE_BASIS_POINTS=0` and `DELIVERY_FEE_PAISE=0` are intentionally neutral placeholders. Ordering remains disabled until actual rates and rules have been confirmed and `PRICING_CONFIRMED=true` is set.
 - **Payments:** set Razorpay test keys and webhook secret. Configure the provider's webhook URL as `https://your-domain/api/payments/webhook` and subscribe to payment captured/failed events. Only captured payments are treated as paid. Do not use live keys until the business approves production activation.
 - **Email:** configure SMTP to enable contact email and account reset messages. Without it, those APIs report that the service is unavailable rather than claiming delivery.
 - **Admin:** no public self-service admin registration exists. Use the bootstrap command on a trusted machine.
