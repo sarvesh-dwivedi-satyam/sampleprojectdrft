@@ -23,6 +23,22 @@ if (process.env.NODE_ENV === 'production' && appUrl.protocol !== 'https:') {
 if (appUrl.pathname !== '/' || appUrl.search || appUrl.hash) {
     throw new Error('APP_ORIGIN must contain only the site origin, without a path or query.');
 }
+const googleCredentials = [
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_CALLBACK_URL
+];
+if (googleCredentials.some(Boolean) && !googleCredentials.every(Boolean)) {
+    throw new Error('Configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_CALLBACK_URL together.');
+}
+if (googleCredentials.every(Boolean)) {
+    const callbackUrl = new URL(process.env.GOOGLE_CALLBACK_URL);
+    if (callbackUrl.origin !== appUrl.origin || callbackUrl.pathname !== '/api/auth/google/callback' ||
+        callbackUrl.search || callbackUrl.hash ||
+        (process.env.NODE_ENV === 'production' && callbackUrl.protocol !== 'https:')) {
+        throw new Error('GOOGLE_CALLBACK_URL must be the same-origin /api/auth/google/callback URL (HTTPS in production).');
+    }
+}
 
 const app = require('./app');
 const pool = require('./config/database');

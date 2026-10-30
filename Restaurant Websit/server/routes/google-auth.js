@@ -9,12 +9,13 @@ const google = require('../services/google-auth');
 const router = express.Router();
 const googleLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false });
 const loginPathFor = (flow) => flow === 'signup' ? '/signup.html' : '/login.html';
-const publicUser = ({ id, full_name, email, role, profile_picture }) => ({
+const publicUser = ({ id, full_name, email, role, profile_picture, auth_provider }) => ({
     id,
     fullName: full_name,
     email,
     role,
-    profilePicture: profile_picture || null
+    profilePicture: profile_picture || null,
+    authProvider: auth_provider
 });
 const safeRedirect = (res, flow, error) => {
     const page = loginPathFor(flow);
@@ -118,7 +119,7 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
                     updated_at = now()
                  WHERE id = $3 AND email = $4 AND is_active = true
                    AND (google_id IS NULL OR google_id = $1)
-                 RETURNING id, full_name, email, role, profile_picture`,
+                 RETURNING id, full_name, email, role, profile_picture, auth_provider`,
                 [identity.googleId, identity.profilePicture, linkUserId, identity.email]
             );
             if (!linked.rowCount) return safeRedirect(res, 'login', 'google-account-conflict');
@@ -127,7 +128,7 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
         }
 
         let account = await pool.query(
-            'SELECT id, full_name, email, role, profile_picture, is_active FROM users WHERE google_id = $1',
+            'SELECT id, full_name, email, role, profile_picture, auth_provider, is_active FROM users WHERE google_id = $1',
             [identity.googleId]
         );
         if (account.rowCount) {
@@ -135,7 +136,7 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
             if (!user.is_active) return safeRedirect(res, flow, 'account-disabled');
             const updated = await pool.query(
                 `UPDATE users SET profile_picture = $1, updated_at = now()
-                 WHERE id = $2 RETURNING id, full_name, email, role, profile_picture`,
+                 WHERE id = $2 RETURNING id, full_name, email, role, profile_picture, auth_provider`,
                 [identity.profilePicture, user.id]
             );
             await beginSession(req, updated.rows[0]);
@@ -143,7 +144,7 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
         }
 
         account = await pool.query(
-            'SELECT id, full_name, email, role, password_hash, google_id, is_active FROM users WHERE email = $1',
+            'SELECT id, full_name, email, role, password_hash, google_id, auth_provider, is_active FROM users WHERE email = $1',
             [identity.email]
         );
         if (account.rowCount) {
@@ -167,7 +168,7 @@ router.get('/callback', googleLimiter, async (req, res, next) => {
         const created = await pool.query(
             `INSERT INTO users (google_id, full_name, email, profile_picture, password_hash, auth_provider)
              VALUES ($1, $2, $3, $4, NULL, 'google')
-             RETURNING id, full_name, email, role, profile_picture`,
+             RETURNING id, full_name, email, role, profile_picture, auth_provider`,
             [identity.googleId, identity.fullName, identity.email, identity.profilePicture]
         );
         await beginSession(req, created.rows[0]);
@@ -206,7 +207,7 @@ router.post('/link', googleLimiter, verifyCsrf, async (req, res, next) => {
                 updated_at = now()
              WHERE id = $3 AND email = $4 AND is_active = true
                AND (google_id IS NULL OR google_id = $1)
-             RETURNING id, full_name, email, role, profile_picture`,
+             RETURNING id, full_name, email, role, profile_picture, auth_provider`,
             [pending.googleId, pending.profilePicture, user.id, pending.email]
         );
         if (!linked.rowCount) return res.status(409).json({ error: 'This Google identity is already linked to another account.' });

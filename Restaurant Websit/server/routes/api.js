@@ -21,12 +21,13 @@ const allowedCategories = new Set([
 ]);
 
 const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
-const publicCustomer = ({ id, full_name, email, role, profile_picture }) => ({
+const publicCustomer = ({ id, full_name, email, role, profile_picture, auth_provider }) => ({
     id,
     fullName: full_name,
     email,
     role,
-    profilePicture: profile_picture || null
+    profilePicture: profile_picture || null,
+    authProvider: auth_provider
 });
 const positiveInt = (value, max = 20) => Number.isInteger(Number(value)) && Number(value) > 0 && Number(value) <= max;
 const validImageUrl = (value) => {
@@ -66,7 +67,7 @@ router.post('/auth/register', registrationLimiter, verifyCsrf, asyncRoute(async 
     try {
         const result = await pool.query(
             `INSERT INTO users (full_name, email, password_hash, auth_provider)
-             VALUES ($1, $2, $3, 'password') RETURNING id, full_name, email, role, profile_picture`,
+             VALUES ($1, $2, $3, 'password') RETURNING id, full_name, email, role, profile_picture, auth_provider`,
             [fullName, email, passwordHash]
         );
         await new Promise((resolve, reject) => req.session.regenerate((error) => error ? reject(error) : resolve()));
@@ -86,7 +87,7 @@ router.post('/auth/login', loginLimiter, verifyCsrf, asyncRoute(async (req, res)
         return res.status(401).json({ error: 'Email or password is incorrect.' });
     }
     const result = await pool.query(
-        'SELECT id, full_name, email, role, password_hash, profile_picture, is_active FROM users WHERE email = $1',
+        'SELECT id, full_name, email, role, password_hash, profile_picture, auth_provider, is_active FROM users WHERE email = $1',
         [email]
     );
     const customer = result.rows[0];
@@ -113,13 +114,14 @@ router.patch('/auth/profile', requireAuth, verifyCsrf, asyncRoute(async (req, re
         return res.status(400).json({ error: 'Enter a valid name, email, and current password.' });
     }
     const account = await pool.query('SELECT password_hash, is_active FROM users WHERE id = $1', [req.session.customer.id]);
-    if (!account.rowCount || !(await bcrypt.compare(currentPassword, account.rows[0].password_hash))) {
+    if (!account.rowCount || !account.rows[0].is_active ||
+        (account.rows[0].password_hash && (!currentPassword || !(await bcrypt.compare(currentPassword, account.rows[0].password_hash))))) {
         return res.status(401).json({ error: 'Current password is incorrect.' });
     }
     try {
         const updated = await pool.query(
             `UPDATE users SET full_name = $1, email = $2, updated_at = now()
-             WHERE id = $3 AND is_active = true RETURNING id, full_name, email, role, profile_picture`,
+             WHERE id = $3 AND is_active = true RETURNING id, full_name, email, role, profile_picture, auth_provider`,
             [fullName, email, req.session.customer.id]
         );
         req.session.customer = publicCustomer(updated.rows[0]);

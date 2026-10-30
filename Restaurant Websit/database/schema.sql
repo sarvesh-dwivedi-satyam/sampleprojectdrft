@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     full_name TEXT NOT NULL CHECK (char_length(full_name) BETWEEN 2 AND 120),
     email TEXT NOT NULL UNIQUE,
-    google_id TEXT UNIQUE,
+    google_id TEXT,
     profile_picture TEXT,
     password_hash TEXT,
     auth_provider TEXT NOT NULL DEFAULT 'password'
@@ -27,6 +27,17 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider TEXT NOT NULL DEFAULT '
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS users_google_id_idx ON users (google_id) WHERE google_id IS NOT NULL;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'users_auth_provider_check'
+          AND conrelid = 'users'::regclass
+    ) THEN
+        ALTER TABLE users ADD CONSTRAINT users_auth_provider_check
+            CHECK (auth_provider IN ('password', 'google', 'password+google'));
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
     token_hash TEXT PRIMARY KEY,

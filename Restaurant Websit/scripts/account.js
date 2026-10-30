@@ -19,12 +19,17 @@
         if (profile) {
             profileForm.elements.fullName.value = session.customer.fullName;
             profileForm.elements.email.value = session.customer.email;
+            profileForm.elements.currentPassword.required = session.customer.authProvider !== 'google';
             profile.textContent = `Signed in${session.customer.authProvider ? ` with ${session.customer.authProvider.replace('+', ' and ')}` : ''}.`;
             const picture = document.querySelector('[data-profile-picture]');
+            const googleLink = document.querySelector('[data-google-link-account]');
             if (session.customer.profilePicture) {
                 picture.src = session.customer.profilePicture;
                 picture.alt = `${session.customer.fullName}'s Google profile picture`;
                 picture.hidden = false;
+            }
+            if (googleLink && ['google', 'password+google'].includes(session.customer.authProvider)) {
+                googleLink.hidden = true;
             }
         }
         if (orders) {
@@ -67,6 +72,12 @@
             document.querySelector('[data-reservations-status]').textContent = data.reservations.length ? '' : 'No reservations to show yet.';
         }
     }
+
+    document.querySelector('[data-google-link-account]')?.addEventListener('click', () => {
+        const link = document.querySelector('[data-google-link-account]');
+        link.setAttribute('aria-busy', 'true');
+        link.textContent = 'Connecting to Google…';
+    });
 
     profileForm?.addEventListener('submit', async (event) => {
         event.preventDefault();
