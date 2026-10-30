@@ -74,6 +74,15 @@ router.get('/start', googleLimiter, (req, res, next) => {
     }
 });
 
+router.get('/pending', (req, res) => {
+    const pending = req.session?.pendingGoogleLink;
+    if (!pending || pending.expiresAt < Date.now()) {
+        delete req.session?.pendingGoogleLink;
+        return res.status(410).json({ error: 'Google account verification expired. Start Google sign-in again.' });
+    }
+    res.json({ email: pending.email });
+});
+
 router.get('/callback', googleLimiter, async (req, res, next) => {
     const flow = req.session?.googleFlow;
     const stateMatches = google.constantTimeEqual(req.query.state, req.session?.googleState);

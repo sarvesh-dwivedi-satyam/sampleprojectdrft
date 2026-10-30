@@ -32,6 +32,14 @@
         linkPanel.hidden = false;
         linkForm.elements.password.focus();
         history.replaceState(null, '', location.pathname);
+        window.Midnight.api('/api/auth/google/pending')
+            .then((result) => {
+                linkPanel.querySelector('[data-google-link-email]').textContent = `Verified Google email: ${result.email}`;
+            })
+            .catch((error) => {
+                linkForm.querySelector('[data-google-link-status]').textContent = error.message;
+                linkForm.querySelector('button[type="submit"]').disabled = true;
+            });
     }
 
     linkForm?.addEventListener('submit', async (event) => {

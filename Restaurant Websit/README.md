@@ -47,8 +47,11 @@ The administrator setup command requires an existing database schema. It does no
 ## Configuration and integrations
 
 See `.env.example` for the complete variable list.
+For Google Cloud OAuth client creation, callback/origin setup, and account-link behavior, see `GOOGLE_AUTH_SETUP.md`.
 
 - **Sessions:** stored in PostgreSQL, HTTP-only, same-site cookies, session IDs rotated after successful login/registration, and secure cookies required in production.
+- **Accounts:** stored in the `users` table. Existing installations with a `customers` table are migrated by renaming it when `npm run db:init` runs. Password-only accounts require password verification before adding a Google identity.
+- **Google sign-in:** optional server-side OpenID Connect. Configure all three `GOOGLE_*` variables to enable it; without credentials, traditional email/password authentication remains available.
 - **Database:** the schema is in `database/schema.sql`. It includes seeded sample dishes and a session store created by the PostgreSQL session adapter.
 - **Reservations:** guest requests are persisted and serialized per date/time slot; the default capacity of 40 is a placeholder and must be replaced with actual table/slot policy.
 - **Reservation time zone:** `BUSINESS_TIME_ZONE` defaults to `Asia/Kolkata`; set the verified restaurant time zone.
