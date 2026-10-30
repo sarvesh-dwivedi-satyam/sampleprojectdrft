@@ -21,7 +21,13 @@ const allowedCategories = new Set([
 ]);
 
 const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
-const publicCustomer = ({ id, full_name, email, role }) => ({ id, fullName: full_name, email, role });
+const publicCustomer = ({ id, full_name, email, role, profile_picture }) => ({
+    id,
+    fullName: full_name,
+    email,
+    role,
+    profilePicture: profile_picture || null
+});
 const positiveInt = (value, max = 20) => Number.isInteger(Number(value)) && Number(value) > 0 && Number(value) <= max;
 const validImageUrl = (value) => {
     if (value === '') return true;
@@ -59,8 +65,8 @@ router.post('/auth/register', registrationLimiter, verifyCsrf, asyncRoute(async 
     const passwordHash = await bcrypt.hash(password, 12);
     try {
         const result = await pool.query(
-            `INSERT INTO customers (full_name, email, password_hash)
-             VALUES ($1, $2, $3) RETURNING id, full_name, email, role`,
+            `INSERT INTO users (full_name, email, password_hash, auth_provider)
+             VALUES ($1, $2, $3, 'password') RETURNING id, full_name, email, role, profile_picture`,
             [fullName, email, passwordHash]
         );
         await new Promise((resolve, reject) => req.session.regenerate((error) => error ? reject(error) : resolve()));
@@ -80,12 +86,13 @@ router.post('/auth/login', loginLimiter, verifyCsrf, asyncRoute(async (req, res)
         return res.status(401).json({ error: 'Email or password is incorrect.' });
     }
     const result = await pool.query(
-        'SELECT id, full_name, email, role, password_hash FROM customers WHERE email = $1',
+        'SELECT id, full_name, email, role, password_hash, profile_picture, is_active FROM users WHERE email = $1',
         [email]
     );
     const customer = result.rows[0];
     if (!customer) await bcrypt.hash(password, 12);
-    const valid = customer && await bcrypt.compare(password, customer.password_hash);
+    const valid = customer && customer.is_active && customer.password_hash &&
+        await bcrypt.compare(password, customer.password_hash);
     if (!valid) return res.status(401).json({ error: 'Email or password is incorrect.' });
     await new Promise((resolve, reject) => req.session.regenerate((error) => error ? reject(error) : resolve()));
     req.session.customer = publicCustomer(customer);
@@ -105,14 +112,14 @@ router.patch('/auth/profile', requireAuth, verifyCsrf, asyncRoute(async (req, re
         currentPassword.length < 1 || currentPassword.length > 128) {
         return res.status(400).json({ error: 'Enter a valid name, email, and current password.' });
     }
-    const account = await pool.query('SELECT password_hash FROM customers WHERE id = $1', [req.session.customer.id]);
+    const account = await pool.query('SELECT password_hash, is_active FROM users WHERE id = $1', [req.session.customer.id]);
     if (!account.rowCount || !(await bcrypt.compare(currentPassword, account.rows[0].password_hash))) {
         return res.status(401).json({ error: 'Current password is incorrect.' });
     }
     try {
         const updated = await pool.query(
-            `UPDATE customers SET full_name = $1, email = $2, updated_at = now()
-             WHERE id = $3 RETURNING id, full_name, email, role`,
+            `UPDATE users SET full_name = $1, email = $2, updated_at = now()
+             WHERE id = $3 AND is_active = true RETURNING id, full_name, email, role, profile_picture`,
             [fullName, email, req.session.customer.id]
         );
         req.session.customer = publicCustomer(updated.rows[0]);
@@ -129,7 +136,7 @@ router.post('/auth/password-reset', loginLimiter, verifyCsrf, asyncRoute(async (
     if (!process.env.SMTP_HOST || !process.env.SMTP_FROM) {
         return res.status(503).json({ error: 'Password reset email is not configured. Contact the restaurant for assistance.' });
     }
-    const account = await pool.query('SELECT id FROM customers WHERE email = $1', [email]);
+    const account = await pool.query('SELECT id FROM users WHERE email = $1 AND password_hash IS NOT NULL AND is_active = true', [email]);
     if (account.rowCount) {
         const token = crypto.randomBytes(32).toString('base64url');
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -176,7 +183,7 @@ router.post('/auth/password-reset/confirm', loginLimiter, verifyCsrf, asyncRoute
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'The reset link is invalid or has expired.' });
         }
-        await client.query('UPDATE customers SET password_hash = $1, updated_at = now() WHERE id = $2', [passwordHash, validToken.rows[0].customer_id]);
+        await client.query('UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2', [passwordHash, validToken.rows[0].customer_id]);
         await client.query('UPDATE password_reset_tokens SET used_at = now() WHERE token_hash = $1', [tokenHash]);
         await client.query(
             `DELETE FROM user_sessions WHERE sess->'customer'->>'id' = $1`,
@@ -453,7 +460,7 @@ router.get('/admin/summary', requireAuth, requireAdmin, asyncRoute(async (_req, 
     const [orders, reservations, customers, revenue] = await Promise.all([
         pool.query('SELECT count(*)::int AS total FROM orders'),
         pool.query("SELECT count(*)::int AS total FROM reservations WHERE status = 'confirmed'"),
-        pool.query("SELECT count(*)::int AS total FROM customers WHERE role = 'customer'"),
+        pool.query("SELECT count(*)::int AS total FROM users WHERE role = 'customer' AND is_active = true"),
         pool.query("SELECT COALESCE(sum(total_paise), 0)::bigint AS total FROM orders WHERE payment_status = 'paid'")
     ]);
     res.json({
@@ -515,7 +522,7 @@ router.delete('/admin/menu/:id', requireAuth, requireAdmin, verifyCsrf, asyncRou
 router.get('/admin/orders', requireAuth, requireAdmin, asyncRoute(async (_req, res) => {
     const result = await pool.query(
         `SELECT o.id, o.status, o.payment_status, o.total_paise, o.created_at, c.full_name, c.email
-         FROM orders o JOIN customers c ON c.id = o.customer_id ORDER BY o.created_at DESC LIMIT 200`
+         FROM orders o JOIN users c ON c.id = o.customer_id ORDER BY o.created_at DESC LIMIT 200`
     );
     res.json({ orders: result.rows });
 }));
@@ -555,8 +562,8 @@ router.patch('/admin/reservations/:id', requireAuth, requireAdmin, verifyCsrf, a
 router.get('/admin/customers', requireAuth, requireAdmin, asyncRoute(async (_req, res) => {
     const result = await pool.query(
         `SELECT c.id, c.full_name, c.email, c.created_at, count(o.id)::int AS order_count
-         FROM customers c LEFT JOIN orders o ON o.customer_id = c.id
-         WHERE c.role = 'customer' GROUP BY c.id ORDER BY c.created_at DESC LIMIT 500`
+         FROM users c LEFT JOIN orders o ON o.customer_id = c.id
+         WHERE c.role = 'customer' AND c.is_active = true GROUP BY c.id ORDER BY c.created_at DESC LIMIT 500`
     );
     res.json({ customers: result.rows });
 }));

@@ -11,8 +11,8 @@ async function createAdmin() {
     }
     const passwordHash = await bcrypt.hash(password, 12);
     await pool.query(
-        `INSERT INTO customers (full_name, email, password_hash, role)
-         VALUES ($1, $2, $3, 'admin')`,
+        `INSERT INTO users (full_name, email, password_hash, auth_provider, role)
+         VALUES ($1, $2, $3, 'password', 'admin')`,
         [name, email, passwordHash]
     );
     console.log(`Administrator account configured for ${email}.`);
