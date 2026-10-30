@@ -170,7 +170,7 @@ button {
         transform var(--transition-standard);
 }
 
-a.button {
+.button {
     display: inline-flex;
     min-height: 3rem;
     align-items: center;
@@ -181,6 +181,7 @@ a.button {
     font-weight: 700;
     text-align: center;
     text-decoration: none;
+    cursor: pointer;
 }
 
 .button--primary {
@@ -448,6 +449,24 @@ body > header nav a[aria-current="page"] {
     object-fit: cover;
 }
 
+.gallery-placeholder {
+    display: grid;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    place-items: center;
+    padding: var(--space-3);
+    background:
+        radial-gradient(ellipse at 60% 35%, rgb(212 163 115 / 12%), transparent 58%),
+        var(--color-surface-raised);
+}
+
+.gallery-placeholder::after {
+    color: var(--color-text-secondary);
+    content: "Photography coming soon";
+    font-size: 0.9rem;
+    text-align: center;
+}
+
 .gallery figcaption {
     padding: 0 var(--space-3) var(--space-3);
 }
@@ -518,6 +537,63 @@ body > footer > p:last-child {
     font-size: 0.88rem;
 }
 
+.food-plates__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.food-plate {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    text-align: center;
+}
+
+.food-plate__disc {
+    display: grid;
+    width: clamp(10rem, 23vw, 17rem);
+    aspect-ratio: 1;
+    place-items: center;
+    padding: 1rem;
+    border: 0.65rem solid #d5c7b5;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, #581b25 0 22%, #d4a373 23% 24%, #1e1a19 25% 44%, #c5a059 45% 46%, #28211e 47% 100%);
+    box-shadow:
+        inset 0 0 0 0.35rem #f5e6d3,
+        0 1.25rem 3rem rgb(0 0 0 / 35%);
+    color: var(--color-text-primary);
+    transition: transform 450ms cubic-bezier(0.2, 0.75, 0.25, 1);
+    will-change: transform;
+}
+
+.food-plate__disc span {
+    max-width: 9ch;
+    padding: 0.45rem 0.65rem;
+    border-radius: var(--radius-small);
+    background: rgb(18 18 18 / 88%);
+    color: var(--color-text-primary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.food-plate h3 {
+    color: var(--color-gold);
+}
+
+.newsletter {
+    text-align: center;
+}
+
+.newsletter > p {
+    max-width: 42rem;
+    margin: 0 auto var(--space-4);
+}
+
 @media (max-width: 58rem) {
     .hero {
         grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.72fr);
@@ -527,6 +603,10 @@ body > footer > p:last-child {
 
     .food-categories > ul {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .food-plates__list {
+        gap: var(--space-3);
     }
 
     body > footer {
@@ -570,7 +650,8 @@ body > footer > p:last-child {
     }
 
     .featured-dishes > ul,
-    .gallery > ul {
+    .gallery > ul,
+    .food-plates__list {
         grid-template-columns: 1fr;
     }
 

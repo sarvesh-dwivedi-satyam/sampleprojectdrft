@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Secure checkout for Midnight Bistro orders.">
+    <title>Checkout | Midnight Bistro</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="pages.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+    <script src="scripts/site.js" defer></script><script src="scripts/checkout.js" defer></script>
+</head>
+<body>
+    <header class="site-header"><a class="brand" href="index.html">Midnight Bistro</a><nav aria-label="Primary navigation"><ul><li><a href="menu.html">Menu</a></li><li><a href="cart.html">Cart</a></li><li><a href="login.html">Login</a></li></ul></nav></header>
+    <main class="page-main auth-main"><form class="form-panel" data-checkout-form novalidate>
+        <p class="eyebrow">Final step</p><h1>Checkout</h1><p>Order total is calculated and validated by the server. Online payment requires configured Razorpay credentials.</p>
+        <label for="delivery-address">Delivery address</label><textarea id="delivery-address" name="address" autocomplete="street-address" rows="4" required minlength="10" maxlength="1000"></textarea>
+        <button class="button button--primary" type="submit">Continue to Secure Payment</button><p class="notice" data-form-status role="status" aria-live="polite"></p>
+    </form></main>
+    <footer class="site-footer"><a class="brand" href="index.html">Midnight Bistro</a><p><small>&copy; 2026 Midnight Bistro.</small></p></footer>
+</body>
+</html>

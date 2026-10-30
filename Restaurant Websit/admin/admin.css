@@ -1,0 +1,83 @@
+.admin-body {
+    min-height: 100vh;
+    background: #100e0d;
+}
+
+.admin-body .site-header nav ul {
+    gap: 0.25rem 1rem;
+}
+
+.admin-body .site-header nav a {
+    min-height: 2.75rem;
+}
+
+.admin-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--space-3);
+    padding-block: var(--space-4);
+}
+
+.metric-card {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface);
+}
+
+.metric-card h2 {
+    margin-bottom: var(--space-2);
+    font-family: var(--font-body);
+    font-size: 1rem;
+}
+
+.metric-card p {
+    margin: 0;
+    color: var(--color-gold);
+    font-family: var(--font-heading);
+    font-size: 2rem;
+}
+
+.admin-form {
+    max-width: 46rem;
+    margin-block: var(--space-5);
+}
+
+.admin-body .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+}
+
+.admin-body table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-body caption {
+    padding: var(--space-3);
+    color: var(--color-text-secondary);
+    text-align: left;
+}
+
+.admin-body th,
+.admin-body td {
+    padding: var(--space-2) var(--space-3);
+    border-top: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.admin-body th {
+    color: var(--color-gold);
+}
+
+.admin-body td select {
+    min-width: 8rem;
+}
+
+@media (max-width: 42rem) {
+    .admin-body .site-header nav ul {
+        gap: 0.25rem 0.75rem;
+    }
+}

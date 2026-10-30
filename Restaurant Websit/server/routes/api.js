@@ -1,12 +1,15 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
+const crypto = require('node:crypto');
+const nodemailer = require('nodemailer');
 const pool = require('../config/database');
 const { verifyCsrf, requireAuth, requireAdmin } = require('../middleware/security');
 const payment = require('../services/razorpay');
 
 const router = express.Router();
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false });
+const contactLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 5, standardHeaders: true, legacyHeaders: false });
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const allowedCategories = new Set([
     'Indian Starters', 'Tandoori Specials', 'North Indian Main Course',
@@ -75,6 +78,71 @@ router.get('/auth/me', (req, res) => {
     res.json({ customer: req.session.customer || null });
 });
 
+router.post('/auth/password-reset', loginLimiter, verifyCsrf, asyncRoute(async (req, res) => {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!emailPattern.test(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
+    if (!process.env.SMTP_HOST || !process.env.SMTP_FROM) {
+        return res.status(503).json({ error: 'Password reset email is not configured. Contact the restaurant for assistance.' });
+    }
+    const account = await pool.query('SELECT id FROM customers WHERE email = $1', [email]);
+    if (account.rowCount) {
+        const token = crypto.randomBytes(32).toString('base64url');
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        await pool.query(
+            `INSERT INTO password_reset_tokens (token_hash, customer_id, expires_at)
+             VALUES ($1, $2, now() + interval '30 minutes')`,
+            [tokenHash, account.rows[0].id]
+        );
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT || 587),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } : undefined
+        });
+        const resetUrl = new URL('/reset-password.html', process.env.APP_ORIGIN || 'http://localhost:3000');
+        resetUrl.searchParams.set('token', token);
+        await transporter.sendMail({
+            from: process.env.SMTP_FROM,
+            to: email,
+            subject: 'Reset your Midnight Bistro password',
+            text: `Use this one-time link within 30 minutes to reset your password: ${resetUrl}\nIf you did not request this, you can ignore this message.`
+        });
+    }
+    res.json({ message: 'If an account exists for that email, reset instructions have been sent.' });
+}));
+
+router.post('/auth/password-reset/confirm', loginLimiter, verifyCsrf, asyncRoute(async (req, res) => {
+    const token = String(req.body.token || '');
+    const password = String(req.body.password || '');
+    if (token.length < 32 || token.length > 200 || password.length < 12 || password.length > 128) {
+        return res.status(400).json({ error: 'The reset link or new password is invalid.' });
+    }
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const passwordHash = await bcrypt.hash(password, 12);
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const validToken = await client.query(
+            `SELECT customer_id FROM password_reset_tokens
+             WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now() FOR UPDATE`,
+            [tokenHash]
+        );
+        if (!validToken.rowCount) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'The reset link is invalid or has expired.' });
+        }
+        await client.query('UPDATE customers SET password_hash = $1, updated_at = now() WHERE id = $2', [passwordHash, validToken.rows[0].customer_id]);
+        await client.query('UPDATE password_reset_tokens SET used_at = now() WHERE token_hash = $1', [tokenHash]);
+        await client.query('COMMIT');
+        res.json({ message: 'Your password has been updated. You can now sign in.' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+}));
+
 router.post('/auth/logout', verifyCsrf, (req, res, next) => {
     if (!req.session) return res.status(204).end();
     req.session.destroy((error) => {
@@ -83,6 +151,34 @@ router.post('/auth/logout', verifyCsrf, (req, res, next) => {
         res.status(204).end();
     });
 });
+
+router.post('/contact', contactLimiter, verifyCsrf, asyncRoute(async (req, res) => {
+    const name = String(req.body.name || '').trim();
+    const email = String(req.body.email || '').trim();
+    const phone = String(req.body.phone || '').trim();
+    const message = String(req.body.message || '').trim();
+    if (name.length < 2 || name.length > 120 || !emailPattern.test(email) || email.length > 254 ||
+        phone.length > 30 || message.length < 10 || message.length > 2000) {
+        return res.status(400).json({ error: 'Check the contact form and try again.' });
+    }
+    if (!process.env.SMTP_HOST || !process.env.SMTP_FROM || !process.env.RESTAURANT_CONTACT_EMAIL) {
+        return res.status(503).json({ error: 'The enquiry email service is not configured yet. Please contact the restaurant by phone.' });
+    }
+    const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } : undefined
+    });
+    await transporter.sendMail({
+        from: process.env.SMTP_FROM,
+        to: process.env.RESTAURANT_CONTACT_EMAIL,
+        replyTo: email,
+        subject: 'Midnight Bistro website enquiry',
+        text: `Name: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\n\n${message}`
+    });
+    res.json({ message: 'Your enquiry was sent to the restaurant.' });
+}));
 
 router.post('/reservations', verifyCsrf, asyncRoute(async (req, res) => {
     const { guestName, guestEmail, guestPhone, date, time, notes = '' } = req.body;

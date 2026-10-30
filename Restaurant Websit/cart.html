@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Review items selected from the Midnight Bistro menu.">
+    <title>Your Cart | Midnight Bistro</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="pages.css">
+    <script src="scripts/site.js" defer></script><script src="scripts/cart.js" defer></script>
+</head>
+<body>
+    <header class="site-header"><a class="brand" href="index.html">Midnight Bistro</a><nav aria-label="Primary navigation"><ul><li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="login.html">Login</a></li><li><a href="cart.html" aria-current="page">Cart <span data-cart-count>0</span></a></li></ul></nav></header>
+    <main class="page-main"><section class="page-intro"><p class="eyebrow">Your selection</p><h1>Your Cart</h1><p>Cart contents are stored in this browser. Current prices are refreshed from the server at checkout.</p></section>
+        <section><ul class="cart-list" data-cart-items></ul><p class="notice" data-cart-status role="status" aria-live="polite"></p><p class="cart-total">Estimated subtotal: <strong data-cart-total>₹0</strong></p><p><a class="button button--secondary" href="menu.html">Continue Browsing</a> <a class="button button--primary" href="checkout.html">Proceed to Checkout</a></p></section>
+    </main>
+    <footer class="site-footer"><a class="brand" href="index.html">Midnight Bistro</a><p><small>&copy; 2026 Midnight Bistro.</small></p></footer>
+</body>
+</html>

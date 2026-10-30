@@ -78,6 +78,15 @@ app.get('/api/health', async (_req, res, next) => {
     }
 });
 
+app.get('/admin/login.html', (_req, res) => {
+    res.sendFile(path.resolve(__dirname, '..', 'admin', 'login.html'));
+});
+app.use('/admin', (req, res, next) => {
+    if (req.path === '/login.html') return next();
+    if (req.session.customer?.role === 'admin') return next();
+    res.redirect('/admin/login.html');
+});
+app.use('/admin', express.static(path.resolve(__dirname, '..', 'admin'), { index: 'index.html' }));
 app.use(['/server', '/database', '/node_modules'], (_req, res) => res.status(404).send('Page not found.'));
 app.use(express.static(path.resolve(__dirname, '..'), {
     extensions: ['html'],
