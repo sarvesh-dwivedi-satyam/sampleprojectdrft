@@ -1,0 +1,22 @@
+.contact-layout {
+    align-items: start;
+}
+
+.contact-layout .form-panel,
+.contact-layout .content-panel {
+    min-width: 0;
+}
+
+.map-placeholder {
+    min-height: 16rem;
+    background:
+        linear-gradient(135deg, transparent 47%, rgb(212 163 115 / 10%) 48% 50%, transparent 51%),
+        linear-gradient(35deg, transparent 47%, rgb(212 163 115 / 8%) 48% 50%, transparent 51%),
+        var(--color-surface-raised);
+}
+
+@media (max-width: 42rem) {
+    .contact-layout {
+        grid-template-columns: 1fr;
+    }
+}

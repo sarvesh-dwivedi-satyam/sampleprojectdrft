@@ -2,6 +2,7 @@
     const profile = document.querySelector('[data-profile]');
     const orders = document.querySelector('[data-orders]');
     const reservations = document.querySelector('[data-reservations]');
+    const profileForm = document.querySelector('[data-profile-form]');
 
     function item(tag, text) {
         const node = document.createElement(tag);
@@ -16,7 +17,9 @@
             return;
         }
         if (profile) {
-            profile.textContent = `${session.customer.fullName} · ${session.customer.email}`;
+            profileForm.elements.fullName.value = session.customer.fullName;
+            profileForm.elements.email.value = session.customer.email;
+            profile.textContent = 'Your account details are current.';
         }
         if (orders) {
             const data = await window.Midnight.api('/api/orders/mine');
@@ -58,6 +61,25 @@
             document.querySelector('[data-reservations-status]').textContent = data.reservations.length ? '' : 'No reservations to show yet.';
         }
     }
+
+    profileForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!profileForm.reportValidity()) return;
+        try {
+            const result = await window.Midnight.api('/api/auth/profile', {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    fullName: profileForm.elements.fullName.value,
+                    email: profileForm.elements.email.value,
+                    currentPassword: profileForm.elements.currentPassword.value
+                })
+            });
+            profileForm.elements.currentPassword.value = '';
+            profile.textContent = `Profile updated for ${result.customer.fullName}.`;
+        } catch (error) {
+            profile.textContent = error.message;
+        }
+    });
 
     document.querySelectorAll('[data-logout]').forEach((link) => link.addEventListener('click', async (event) => {
         event.preventDefault();

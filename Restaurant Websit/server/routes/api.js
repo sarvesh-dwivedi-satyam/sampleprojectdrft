@@ -6,10 +6,13 @@ const nodemailer = require('nodemailer');
 const pool = require('../config/database');
 const { verifyCsrf, requireAuth, requireAdmin } = require('../middleware/security');
 const payment = require('../services/razorpay');
+const { calculateTotals } = require('../services/pricing');
 
 const router = express.Router();
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false });
+const registrationLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 5, standardHeaders: true, legacyHeaders: false });
 const contactLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 5, standardHeaders: true, legacyHeaders: false });
+const reservationLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 8, standardHeaders: true, legacyHeaders: false });
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const allowedCategories = new Set([
     'Indian Starters', 'Tandoori Specials', 'North Indian Main Course',
@@ -20,6 +23,14 @@ const allowedCategories = new Set([
 const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 const publicCustomer = ({ id, full_name, email, role }) => ({ id, fullName: full_name, email, role });
 const positiveInt = (value, max = 20) => Number.isInteger(Number(value)) && Number(value) > 0 && Number(value) <= max;
+const validImageUrl = (value) => {
+    if (value === '') return true;
+    try {
+        return ['http:', 'https:'].includes(new URL(value).protocol);
+    } catch {
+        return false;
+    }
+};
 
 router.get('/csrf', (req, res) => {
     if (!req.session.csrfToken) {
@@ -37,7 +48,7 @@ router.get('/menu', asyncRoute(async (req, res) => {
     res.json({ items: result.rows });
 }));
 
-router.post('/auth/register', verifyCsrf, asyncRoute(async (req, res) => {
+router.post('/auth/register', registrationLimiter, verifyCsrf, asyncRoute(async (req, res) => {
     const fullName = String(req.body.fullName || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
@@ -51,7 +62,9 @@ router.post('/auth/register', verifyCsrf, asyncRoute(async (req, res) => {
              VALUES ($1, $2, $3) RETURNING id, full_name, email, role`,
             [fullName, email, passwordHash]
         );
+        await new Promise((resolve, reject) => req.session.regenerate((error) => error ? reject(error) : resolve()));
         req.session.customer = publicCustomer(result.rows[0]);
+        req.session.cookie.maxAge = 1000 * 60 * 60 * 8;
         res.status(201).json({ customer: req.session.customer });
     } catch (error) {
         if (error.code === '23505') return res.status(409).json({ error: 'An account with this email already exists.' });
@@ -67,16 +80,44 @@ router.post('/auth/login', loginLimiter, verifyCsrf, asyncRoute(async (req, res)
         [email]
     );
     const customer = result.rows[0];
+    if (!customer) await bcrypt.hash(password, 12);
     const valid = customer && await bcrypt.compare(password, customer.password_hash);
     if (!valid) return res.status(401).json({ error: 'Email or password is incorrect.' });
     await new Promise((resolve, reject) => req.session.regenerate((error) => error ? reject(error) : resolve()));
     req.session.customer = publicCustomer(customer);
+    req.session.cookie.maxAge = req.body.remember === true ? 1000 * 60 * 60 * 24 * 30 : 1000 * 60 * 60 * 8;
     res.json({ customer: req.session.customer });
 }));
 
 router.get('/auth/me', (req, res) => {
     res.json({ customer: req.session.customer || null });
 });
+
+router.patch('/auth/profile', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
+    const fullName = String(req.body.fullName || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const currentPassword = String(req.body.currentPassword || '');
+    if (fullName.length < 2 || fullName.length > 120 || !emailPattern.test(email) || email.length > 254 ||
+        currentPassword.length < 1 || currentPassword.length > 128) {
+        return res.status(400).json({ error: 'Enter a valid name, email, and current password.' });
+    }
+    const account = await pool.query('SELECT password_hash FROM customers WHERE id = $1', [req.session.customer.id]);
+    if (!account.rowCount || !(await bcrypt.compare(currentPassword, account.rows[0].password_hash))) {
+        return res.status(401).json({ error: 'Current password is incorrect.' });
+    }
+    try {
+        const updated = await pool.query(
+            `UPDATE customers SET full_name = $1, email = $2, updated_at = now()
+             WHERE id = $3 RETURNING id, full_name, email, role`,
+            [fullName, email, req.session.customer.id]
+        );
+        req.session.customer = publicCustomer(updated.rows[0]);
+        res.json({ customer: req.session.customer });
+    } catch (error) {
+        if (error.code === '23505') return res.status(409).json({ error: 'An account with this email already exists.' });
+        throw error;
+    }
+}));
 
 router.post('/auth/password-reset', loginLimiter, verifyCsrf, asyncRoute(async (req, res) => {
     const email = String(req.body.email || '').trim().toLowerCase();
@@ -133,6 +174,10 @@ router.post('/auth/password-reset/confirm', loginLimiter, verifyCsrf, asyncRoute
         }
         await client.query('UPDATE customers SET password_hash = $1, updated_at = now() WHERE id = $2', [passwordHash, validToken.rows[0].customer_id]);
         await client.query('UPDATE password_reset_tokens SET used_at = now() WHERE token_hash = $1', [tokenHash]);
+        await client.query(
+            `DELETE FROM user_sessions WHERE sess->'customer'->>'id' = $1`,
+            [String(validToken.rows[0].customer_id)]
+        );
         await client.query('COMMIT');
         res.json({ message: 'Your password has been updated. You can now sign in.' });
     } catch (error) {
@@ -180,17 +225,35 @@ router.post('/contact', contactLimiter, verifyCsrf, asyncRoute(async (req, res) 
     res.json({ message: 'Your enquiry was sent to the restaurant.' });
 }));
 
-router.post('/reservations', verifyCsrf, asyncRoute(async (req, res) => {
+router.post('/reservations', reservationLimiter, verifyCsrf, asyncRoute(async (req, res) => {
     const { guestName, guestEmail, guestPhone, date, time, notes = '' } = req.body;
     const guestCount = Number(req.body.guestCount);
-    const requestedDate = new Date(`${date}T${time}:00`);
+    const parsedDate = new Date(`${date}T00:00:00Z`);
+    const dateIsValid = /^\d{4}-\d{2}-\d{2}$/.test(date || '') &&
+        !Number.isNaN(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === date;
+    const timeParts = /^(\d{2}):(\d{2})$/.exec(time || '');
+    const timeIsValid = timeParts && Number(timeParts[1]) < 24 && Number(timeParts[2]) < 60;
+    const businessZone = process.env.BUSINESS_TIME_ZONE || 'Asia/Kolkata';
+    const nowParts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: businessZone,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date()).reduce((parts, item) => {
+        parts[item.type] = item.value;
+        return parts;
+    }, {});
+    const todayInBusinessZone = `${nowParts.year}-${nowParts.month}-${nowParts.day}`;
+    const currentTimeInBusinessZone = `${nowParts.hour}:${nowParts.minute}`;
     const capacity = Number(process.env.RESERVATION_CAPACITY_PER_SLOT || 40);
+    if (!Number.isSafeInteger(capacity) || capacity < 1 || capacity > 1000) {
+        return res.status(503).json({ error: 'Reservation capacity is not configured correctly.' });
+    }
     if (
         typeof guestName !== 'string' || guestName.trim().length < 2 || guestName.length > 120 ||
         typeof guestEmail !== 'string' || !emailPattern.test(guestEmail) ||
         typeof guestPhone !== 'string' || guestPhone.trim().length < 7 || guestPhone.length > 30 ||
-        !positiveInt(guestCount, 20) || !/^\d{4}-\d{2}-\d{2}$/.test(date || '') ||
-        !/^\d{2}:\d{2}$/.test(time || '') || Number.isNaN(requestedDate.getTime()) || requestedDate <= new Date() ||
+        !positiveInt(guestCount, 20) || !dateIsValid || !timeIsValid ||
+        date < todayInBusinessZone || (date === todayInBusinessZone && time <= currentTimeInBusinessZone) ||
         typeof notes !== 'string' || notes.length > 1000
     ) {
         return res.status(400).json({ error: 'Check the reservation details and choose a future date and time.' });
@@ -256,6 +319,9 @@ router.post('/orders', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
     }
     const requested = new Map();
     for (const line of lines) {
+        if (!line || typeof line !== 'object') {
+            return res.status(400).json({ error: 'One or more cart items are invalid.' });
+        }
         const id = Number(line.id);
         const quantity = Number(line.quantity);
         if (!Number.isInteger(id) || id < 1 || !positiveInt(quantity)) {
@@ -269,11 +335,11 @@ router.post('/orders', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
         [[...requested.keys()]]
     );
     if (itemResult.rows.length !== requested.size) return res.status(409).json({ error: 'A cart item is no longer available. Refresh the menu.' });
-    const subtotal = itemResult.rows.reduce((sum, item) => sum + item.price_paise * requested.get(Number(item.id)), 0);
-    const tax = Math.round(subtotal * 0.05);
-    const delivery = 0;
-    const total = subtotal + tax + delivery;
-    if (!Number.isSafeInteger(total) || total < 100) return res.status(400).json({ error: 'Order total is invalid.' });
+    const totals = calculateTotals(itemResult.rows.map((item) => ({
+        price_paise: item.price_paise,
+        quantity: requested.get(Number(item.id))
+    })));
+    if (totals.totalPaise < 100) return res.status(400).json({ error: 'Order total is invalid.' });
 
     const client = await pool.connect();
     let orderId;
@@ -282,7 +348,7 @@ router.post('/orders', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
         const order = await client.query(
             `INSERT INTO orders (customer_id, subtotal_paise, tax_paise, delivery_paise, total_paise, delivery_address)
              VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-            [req.session.customer.id, subtotal, tax, delivery, total, address]
+            [req.session.customer.id, totals.subtotalPaise, totals.taxPaise, totals.deliveryPaise, totals.totalPaise, address]
         );
         orderId = order.rows[0].id;
         for (const item of itemResult.rows) {
@@ -293,14 +359,14 @@ router.post('/orders', requireAuth, verifyCsrf, asyncRoute(async (req, res) => {
             );
         }
         const gatewayOrder = await payment.createClient().orders.create({
-            amount: total,
+            amount: totals.totalPaise,
             currency: process.env.RAZORPAY_CURRENCY || 'INR',
             receipt: `bistro-${orderId}`
         });
         await client.query('UPDATE orders SET payment_order_id = $1 WHERE id = $2', [gatewayOrder.id, orderId]);
         await client.query('COMMIT');
         res.status(201).json({
-            order: { id: orderId, amount: total, currency: gatewayOrder.currency, status: 'payment_pending' },
+            order: { id: orderId, amount: totals.totalPaise, currency: gatewayOrder.currency, status: 'payment_pending' },
             payment: { keyId: process.env.RAZORPAY_KEY_ID, orderId: gatewayOrder.id }
         });
     } catch (error) {
@@ -317,19 +383,42 @@ router.post('/payments/verify', requireAuth, verifyCsrf, asyncRoute(async (req, 
         !payment.verifyPaymentSignature(orderId, paymentId, signature)) {
         return res.status(400).json({ error: 'Payment verification failed.' });
     }
+    const storedOrder = await pool.query(
+        'SELECT id, total_paise FROM orders WHERE payment_order_id = $1 AND customer_id = $2',
+        [orderId, req.session.customer.id]
+    );
+    if (!storedOrder.rowCount) return res.status(404).json({ error: 'The order could not be found.' });
+    const gatewayPayment = await payment.createClient().payments.fetch(paymentId);
+    if (gatewayPayment.order_id !== orderId || gatewayPayment.status !== 'captured' ||
+        gatewayPayment.amount !== storedOrder.rows[0].total_paise ||
+        gatewayPayment.currency !== (process.env.RAZORPAY_CURRENCY || 'INR')) {
+        return res.status(409).json({ error: 'The payment is not captured for the expected amount and order.' });
+    }
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        const existing = await client.query(
+            `SELECT id, status, payment_status, payment_id
+             FROM orders WHERE payment_order_id = $1 AND customer_id = $2 FOR UPDATE`,
+            [orderId, req.session.customer.id]
+        );
+        if (!existing.rowCount) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'The order could not be found.' });
+        }
+        if (existing.rows[0].payment_status === 'paid' && existing.rows[0].payment_id === paymentId) {
+            await client.query('COMMIT');
+            return res.json({ order: { id: existing.rows[0].id, status: existing.rows[0].status } });
+        }
+        if (existing.rows[0].payment_status !== 'pending') {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ error: 'This order payment was already processed.' });
+        }
         const updated = await client.query(
             `UPDATE orders SET payment_status = 'paid', status = 'confirmed', payment_id = $1, updated_at = now()
-             WHERE payment_order_id = $2 AND customer_id = $3 AND payment_status = 'pending'
-             RETURNING id, status`,
-            [paymentId, orderId, req.session.customer.id]
+             WHERE id = $2 RETURNING id, status`,
+            [paymentId, existing.rows[0].id]
         );
-        if (!updated.rowCount) {
-            await client.query('ROLLBACK');
-            return res.status(409).json({ error: 'Payment was already processed or the order could not be found.' });
-        }
         await client.query('COMMIT');
         res.json({ order: updated.rows[0] });
     } catch (error) {
@@ -379,7 +468,7 @@ router.post('/admin/menu', requireAuth, requireAdmin, verifyCsrf, asyncRoute(asy
     if (typeof name !== 'string' || name.trim().length < 2 || name.length > 120 ||
         typeof description !== 'string' || description.length > 500 ||
         !allowedCategories.has(category) || !Number.isSafeInteger(pricePaise) || pricePaise < 0 ||
-        typeof imageUrl !== 'string' || imageUrl.length > 500 ||
+        typeof imageUrl !== 'string' || imageUrl.length > 500 || !validImageUrl(imageUrl) ||
         typeof vegetarian !== 'boolean' || typeof featured !== 'boolean') {
         return res.status(400).json({ error: 'Menu item details are invalid.' });
     }
@@ -396,7 +485,7 @@ router.patch('/admin/menu/:id', requireAuth, requireAdmin, verifyCsrf, asyncRout
     const pricePaise = Math.round(Number(priceRupees) * 100);
     if (typeof name !== 'string' || name.trim().length < 2 || name.length > 120 ||
         typeof description !== 'string' || description.length > 500 || !allowedCategories.has(category) ||
-        !Number.isSafeInteger(pricePaise) || pricePaise < 0 || typeof imageUrl !== 'string' || imageUrl.length > 500 ||
+        !Number.isSafeInteger(pricePaise) || pricePaise < 0 || typeof imageUrl !== 'string' || imageUrl.length > 500 || !validImageUrl(imageUrl) ||
         typeof vegetarian !== 'boolean' || typeof featured !== 'boolean' || typeof available !== 'boolean') {
         return res.status(400).json({ error: 'Complete, valid menu item details are required.' });
     }
@@ -490,8 +579,9 @@ router.post('/payments/webhook', asyncRoute(async (req, res) => {
         if (event.event === 'payment.captured' && gatewayOrderId && paymentEntity?.id) {
             await client.query(
                 `UPDATE orders SET payment_status = 'paid', status = 'confirmed', payment_id = $1, updated_at = now()
-                 WHERE payment_order_id = $2 AND payment_status = 'pending'`,
-                [paymentEntity.id, gatewayOrderId]
+                 WHERE payment_order_id = $2 AND payment_status = 'pending'
+                   AND total_paise = $3 AND $4 = $5`,
+                [paymentEntity.id, gatewayOrderId, paymentEntity.amount, paymentEntity.currency, process.env.RAZORPAY_CURRENCY || 'INR']
             );
         } else if (event.event === 'payment.failed' && gatewayOrderId) {
             await client.query(

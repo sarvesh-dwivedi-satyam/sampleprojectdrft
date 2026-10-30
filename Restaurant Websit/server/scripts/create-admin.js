@@ -6,15 +6,13 @@ async function createAdmin() {
     const name = String(process.env.ADMIN_NAME || '').trim();
     const email = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
     const password = String(process.env.ADMIN_PASSWORD || '');
-    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 16) {
-        throw new Error('Set ADMIN_NAME, ADMIN_EMAIL, and an ADMIN_PASSWORD of at least 16 characters for this command.');
+    if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 12 || password.length > 128) {
+        throw new Error('Set ADMIN_NAME, ADMIN_EMAIL, and an ADMIN_PASSWORD of 12 to 128 characters for this command.');
     }
     const passwordHash = await bcrypt.hash(password, 12);
     await pool.query(
         `INSERT INTO customers (full_name, email, password_hash, role)
-         VALUES ($1, $2, $3, 'admin')
-         ON CONFLICT (email) DO UPDATE SET full_name = EXCLUDED.full_name,
-             password_hash = EXCLUDED.password_hash, role = 'admin', updated_at = now()`,
+         VALUES ($1, $2, $3, 'admin')`,
         [name, email, passwordHash]
     );
     console.log(`Administrator account configured for ${email}.`);

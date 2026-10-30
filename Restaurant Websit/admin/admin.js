@@ -81,6 +81,20 @@
             cell(row, item.vegetarian ? 'Vegetarian' : 'Non-vegetarian');
             cell(row, item.available ? 'Available' : 'Unavailable');
             const actionCell = document.createElement('td');
+            actionCell.append(action('Edit', () => {
+                const dialog = document.querySelector('[data-menu-dialog]');
+                const form = document.querySelector('[data-menu-edit]');
+                form.elements.id.value = item.id;
+                form.elements.name.value = item.name;
+                form.elements.description.value = item.description || '';
+                form.elements.category.value = item.category;
+                form.elements.priceRupees.value = (item.price_paise / 100).toFixed(2);
+                form.elements.imageUrl.value = item.image_url || '';
+                form.elements.vegetarian.checked = item.vegetarian;
+                form.elements.featured.checked = item.featured;
+                form.elements.available.checked = item.available;
+                dialog.showModal();
+            }));
             if (item.available) {
                 actionCell.append(action('Mark unavailable', async () => {
                     try {
@@ -116,6 +130,34 @@
             form.reset();
             await loadMenu();
             status.textContent = 'Dish added.';
+        } catch (error) { status.textContent = error.message; }
+    });
+
+    document.querySelector('[data-close-menu-dialog]')?.addEventListener('click', () => {
+        document.querySelector('[data-menu-dialog]').close();
+    });
+
+    document.querySelector('[data-menu-edit]')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (!form.reportValidity()) return;
+        try {
+            await window.Midnight.api(`/api/admin/menu/${form.elements.id.value}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    name: form.elements.name.value,
+                    description: form.elements.description.value,
+                    category: form.elements.category.value,
+                    priceRupees: form.elements.priceRupees.value,
+                    imageUrl: form.elements.imageUrl.value,
+                    vegetarian: form.elements.vegetarian.checked,
+                    featured: form.elements.featured.checked,
+                    available: form.elements.available.checked
+                })
+            });
+            document.querySelector('[data-menu-dialog]').close();
+            await loadMenu();
+            status.textContent = 'Dish updated.';
         } catch (error) { status.textContent = error.message; }
     });
 

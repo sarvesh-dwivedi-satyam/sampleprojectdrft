@@ -21,7 +21,7 @@
                 result = await window.Midnight.api(url, {
                     method: 'POST',
                     body: JSON.stringify(mode === 'login'
-                        ? { email: values.email, password: values.password }
+                        ? { email: values.email, password: values.password, remember: form.elements.remember?.checked === true }
                         : { fullName: values.fullName, email: values.email, password: values.password })
                 });
                 location.href = result.customer.role === 'admin' ? 'admin/index.html' : 'profile.html';

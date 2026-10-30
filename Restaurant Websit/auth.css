@@ -1,0 +1,33 @@
+.auth-panel {
+    border-top: 2px solid var(--color-rich-gold);
+}
+
+.auth-panel > p:last-child {
+    margin-bottom: 0;
+}
+
+.form-panel .notice {
+    overflow-wrap: anywhere;
+}
+
+.auth-main > .form-panel {
+    width: min(100%, 34rem);
+}
+
+.auth-main > form:not(.auth-panel) {
+    width: min(100%, 42rem);
+}
+
+.cart-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+@media (max-width: 42rem) {
+    .cart-item {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+}

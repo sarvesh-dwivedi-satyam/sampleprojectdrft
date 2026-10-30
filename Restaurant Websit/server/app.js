@@ -82,7 +82,7 @@ app.get('/admin/login.html', (_req, res) => {
     res.sendFile(path.resolve(__dirname, '..', 'admin', 'login.html'));
 });
 app.use('/admin', (req, res, next) => {
-    if (req.path === '/login.html') return next();
+    if (['/login.html', '/admin.js', '/admin.css'].includes(req.path)) return next();
     if (req.session.customer?.role === 'admin') return next();
     res.redirect('/admin/login.html');
 });

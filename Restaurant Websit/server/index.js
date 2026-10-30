@@ -5,6 +5,17 @@ if (!process.env.SESSION_SECRET || Buffer.byteLength(process.env.SESSION_SECRET)
 if (process.env.NODE_ENV === 'production' && process.env.SESSION_COOKIE_SECURE !== 'true') {
     throw new Error('Set SESSION_COOKIE_SECURE=true when NODE_ENV=production.');
 }
+try {
+    new Intl.DateTimeFormat('en-CA', { timeZone: process.env.BUSINESS_TIME_ZONE || 'Asia/Kolkata' }).format(new Date());
+} catch {
+    throw new Error('BUSINESS_TIME_ZONE must be a valid IANA time zone.');
+}
+const taxRate = Number(process.env.TAX_RATE_BASIS_POINTS || 0);
+const deliveryFee = Number(process.env.DELIVERY_FEE_PAISE || 0);
+if (!Number.isSafeInteger(taxRate) || taxRate < 0 || taxRate > 10_000 ||
+    !Number.isSafeInteger(deliveryFee) || deliveryFee < 0) {
+    throw new Error('Tax and delivery configuration must use non-negative integer values.');
+}
 
 const app = require('./app');
 const pool = require('./config/database');

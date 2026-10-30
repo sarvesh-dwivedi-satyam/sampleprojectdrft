@@ -76,6 +76,10 @@
     min-width: 8rem;
 }
 
+.admin-body td .button {
+    margin: 0.2rem;
+}
+
 @media (max-width: 42rem) {
     .admin-body .site-header nav ul {
         gap: 0.25rem 0.75rem;

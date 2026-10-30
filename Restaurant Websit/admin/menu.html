@@ -4,6 +4,22 @@
 <body class="admin-body"><header class="site-header"><a class="brand" href="index.html">Midnight Bistro Admin</a><nav aria-label="Administrator navigation"><ul><li><a href="index.html">Overview</a></li><li><a href="menu.html" aria-current="page">Menu</a></li><li><a href="orders.html">Orders</a></li><li><a href="reservations.html">Reservations</a></li><li><a href="customers.html">Customers</a></li><li><a href="login.html" data-admin-logout>Logout</a></li></ul></nav></header>
 <main class="page-main"><section class="page-intro"><p class="eyebrow">Catalog</p><h1>Menu Management</h1></section>
 <form class="form-panel admin-form" data-menu-create novalidate><h2>Add dish</h2><label for="dish-name">Dish name</label><input id="dish-name" name="name" required maxlength="120"><label for="dish-description">Description</label><textarea id="dish-description" name="description" rows="2" maxlength="500"></textarea><label for="dish-category">Category</label><select id="dish-category" name="category" required><option>Indian Starters</option><option>Tandoori Specials</option><option>North Indian Main Course</option><option>South Indian Specialties</option><option>Biryani and Rice</option><option>Indian Breads</option><option>Desserts</option><option>Beverages</option><option>Chef's Special</option></select><label for="dish-price">Price (₹)</label><input id="dish-price" name="priceRupees" type="number" min="0" step="0.01" required><label for="dish-image">Image URL (optional)</label><input id="dish-image" name="imageUrl" type="url"><label class="checkbox-label"><input name="vegetarian" type="checkbox" checked> Vegetarian</label><label class="checkbox-label"><input name="featured" type="checkbox"> Featured</label><button class="button button--primary" type="submit">Add Dish</button></form>
+<dialog class="form-panel admin-edit-dialog" data-menu-dialog aria-labelledby="edit-dish-heading">
+    <form data-menu-edit novalidate>
+        <h2 id="edit-dish-heading">Edit dish</h2>
+        <input type="hidden" name="id">
+        <label for="edit-dish-name">Dish name</label><input id="edit-dish-name" name="name" required maxlength="120">
+        <label for="edit-dish-description">Description</label><textarea id="edit-dish-description" name="description" rows="2" maxlength="500"></textarea>
+        <label for="edit-dish-category">Category</label><select id="edit-dish-category" name="category" required><option>Indian Starters</option><option>Tandoori Specials</option><option>North Indian Main Course</option><option>South Indian Specialties</option><option>Biryani and Rice</option><option>Indian Breads</option><option>Desserts</option><option>Beverages</option><option>Chef's Special</option></select>
+        <label for="edit-dish-price">Price (₹)</label><input id="edit-dish-price" name="priceRupees" type="number" min="0" step="0.01" required>
+        <label for="edit-dish-image">Image URL</label><input id="edit-dish-image" name="imageUrl" type="url">
+        <label class="checkbox-label"><input name="vegetarian" type="checkbox"> Vegetarian</label>
+        <label class="checkbox-label"><input name="featured" type="checkbox"> Featured</label>
+        <label class="checkbox-label"><input name="available" type="checkbox"> Available</label>
+        <button class="button button--primary" type="submit">Save Changes</button>
+        <button class="button button--secondary" type="button" data-close-menu-dialog>Cancel</button>
+    </form>
+</dialog>
 <p class="notice" data-admin-status role="status" aria-live="polite"></p><section><h2>Current Menu</h2><div class="table-wrap"><table><caption>Menu dishes and availability</caption><thead><tr><th scope="col">Dish</th><th scope="col">Category</th><th scope="col">Price</th><th scope="col">Diet</th><th scope="col">Availability</th><th scope="col">Action</th></tr></thead><tbody data-admin-menu></tbody></table></div></section></main>
 <footer class="site-footer"><p>Midnight Bistro administrator tools</p></footer></body>
 </html>

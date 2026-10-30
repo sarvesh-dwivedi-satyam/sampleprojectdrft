@@ -49,7 +49,6 @@ html {
 }
 
 body {
-    min-width: 20rem;
     margin: 0;
     background: var(--color-background);
     color: var(--color-text-primary);
@@ -202,7 +201,7 @@ button {
     color: var(--color-text-primary);
 }
 
-a.button--primary:hover {
+.button--primary:hover {
     border-color: var(--color-rich-gold);
     background: var(--color-rich-gold);
     box-shadow: var(--shadow-glow);
@@ -210,14 +209,14 @@ a.button--primary:hover {
     transform: translateY(-2px);
 }
 
-a.button--secondary:hover {
+.button--secondary:hover {
     border-color: var(--color-gold);
     background: rgb(212 163 115 / 10%);
     color: var(--color-gold);
     transform: translateY(-2px);
 }
 
-a.button--accent:hover {
+.button--accent:hover {
     border-color: var(--color-rich-gold);
     background: #702632;
     color: var(--color-text-primary);
