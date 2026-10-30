@@ -10,7 +10,7 @@ const api = require('./routes/api');
 const app = express();
 const PgSession = connectPgSimple(session);
 const production = process.env.NODE_ENV === 'production';
-const origin = process.env.APP_ORIGIN || `http://localhost:${process.env.PORT || 3000}`;
+const origin = new URL(process.env.APP_ORIGIN || `http://localhost:${process.env.PORT || 3000}`).origin;
 
 app.disable('x-powered-by');
 app.set('trust proxy', production ? 1 : false);

@@ -52,7 +52,7 @@ router.post('/auth/register', registrationLimiter, verifyCsrf, asyncRoute(async 
     const fullName = String(req.body.fullName || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
-    if (fullName.length < 2 || fullName.length > 120 || !emailPattern.test(email) || password.length < 12 || password.length > 128) {
+    if (fullName.length < 2 || fullName.length > 120 || email.length > 254 || !emailPattern.test(email) || password.length < 12 || password.length > 128) {
         return res.status(400).json({ error: 'Enter a name, valid email, and password with at least 12 characters.' });
     }
     const passwordHash = await bcrypt.hash(password, 12);
@@ -75,6 +75,9 @@ router.post('/auth/register', registrationLimiter, verifyCsrf, asyncRoute(async 
 router.post('/auth/login', loginLimiter, verifyCsrf, asyncRoute(async (req, res) => {
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
+    if (email.length > 254 || !emailPattern.test(email) || !password || password.length > 128) {
+        return res.status(401).json({ error: 'Email or password is incorrect.' });
+    }
     const result = await pool.query(
         'SELECT id, full_name, email, role, password_hash FROM customers WHERE email = $1',
         [email]
@@ -121,7 +124,7 @@ router.patch('/auth/profile', requireAuth, verifyCsrf, asyncRoute(async (req, re
 
 router.post('/auth/password-reset', loginLimiter, verifyCsrf, asyncRoute(async (req, res) => {
     const email = String(req.body.email || '').trim().toLowerCase();
-    if (!emailPattern.test(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
+    if (email.length > 254 || !emailPattern.test(email)) return res.status(400).json({ error: 'Enter a valid email address.' });
     if (!process.env.SMTP_HOST || !process.env.SMTP_FROM) {
         return res.status(503).json({ error: 'Password reset email is not configured. Contact the restaurant for assistance.' });
     }
@@ -250,7 +253,7 @@ router.post('/reservations', reservationLimiter, verifyCsrf, asyncRoute(async (r
     }
     if (
         typeof guestName !== 'string' || guestName.trim().length < 2 || guestName.length > 120 ||
-        typeof guestEmail !== 'string' || !emailPattern.test(guestEmail) ||
+        typeof guestEmail !== 'string' || guestEmail.length > 254 || !emailPattern.test(guestEmail) ||
         typeof guestPhone !== 'string' || guestPhone.trim().length < 7 || guestPhone.length > 30 ||
         !positiveInt(guestCount, 20) || !dateIsValid || !timeIsValid ||
         date < todayInBusinessZone || (date === todayInBusinessZone && time <= currentTimeInBusinessZone) ||

@@ -16,6 +16,13 @@ if (!Number.isSafeInteger(taxRate) || taxRate < 0 || taxRate > 10_000 ||
     !Number.isSafeInteger(deliveryFee) || deliveryFee < 0) {
     throw new Error('Tax and delivery configuration must use non-negative integer values.');
 }
+const appUrl = new URL(process.env.APP_ORIGIN || `http://localhost:${process.env.PORT || 3000}`);
+if (process.env.NODE_ENV === 'production' && appUrl.protocol !== 'https:') {
+    throw new Error('APP_ORIGIN must use HTTPS in production.');
+}
+if (appUrl.pathname !== '/' || appUrl.search || appUrl.hash) {
+    throw new Error('APP_ORIGIN must contain only the site origin, without a path or query.');
+}
 
 const app = require('./app');
 const pool = require('./config/database');
