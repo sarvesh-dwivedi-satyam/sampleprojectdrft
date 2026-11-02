@@ -103,17 +103,34 @@
 
     function appendHighlighted(target, value, query) {
         const normalizedQuery = engine.normalize(query);
-        const escaped = normalizedQuery.split(' ').filter(Boolean).map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-        if (!escaped.length) {
+        const terms = normalizedQuery.split(' ').filter(Boolean);
+        if (!terms.length) {
             target.textContent = value;
             return;
         }
-        const expression = new RegExp(`(${escaped.join('|')})`, 'ig');
+        const ranges = [];
+        for (const term of terms) {
+            const expression = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+            const exactMatches = [...value.matchAll(expression)];
+            exactMatches.forEach((match) => ranges.push([match.index, match.index + match[0].length]));
+            if (!exactMatches.length && term.length >= 4) {
+                const limit = term.length >= 7 ? 2 : 1;
+                for (const match of value.matchAll(/[\p{L}\p{N}]+/gu)) {
+                    const word = engine.normalize(match[0]);
+                    if (Math.abs(word.length - term.length) <= limit &&
+                        window.MidnightMenuSearch.editDistance(term, word, limit) <= limit) {
+                        ranges.push([match.index, match.index + match[0].length]);
+                    }
+                }
+            }
+        }
+        ranges.sort((left, right) => left[0] - right[0] || right[1] - left[1]);
         let last = 0;
-        for (const match of value.matchAll(expression)) {
-            target.append(document.createTextNode(value.slice(last, match.index)));
-            target.append(element('mark', '', match[0]));
-            last = match.index + match[0].length;
+        for (const [start, end] of ranges) {
+            if (start < last) continue;
+            target.append(document.createTextNode(value.slice(last, start)));
+            target.append(element('mark', '', value.slice(start, end)));
+            last = end;
         }
         target.append(document.createTextNode(value.slice(last)));
     }
@@ -391,6 +408,9 @@
     suggestions.addEventListener('click', (event) => {
         const option = event.target.closest('[data-suggestion-index]');
         if (option) selectSuggestion(Number(option.dataset.suggestionIndex));
+    });
+    suggestions.addEventListener('mousedown', (event) => {
+        if (event.target.closest('[data-suggestion-index]')) event.preventDefault();
     });
     document.addEventListener('click', (event) => {
         if (!event.target.closest('.search-control')) hideSuggestions();
