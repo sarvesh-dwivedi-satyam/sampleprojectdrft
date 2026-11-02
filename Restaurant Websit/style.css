@@ -618,6 +618,13 @@ body > footer > p:last-child {
     color: var(--color-gold);
 }
 
+.food-plate__credit {
+    max-width: 17rem;
+    margin: -0.5rem 0 0;
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+
 .newsletter {
     text-align: center;
 }
