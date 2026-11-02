@@ -5,6 +5,8 @@ window.MidnightImages = Object.freeze({
   dish: null,
   dessert: null,
   dishFallback: null,
+  paneerTikka: 'assets/images/starters/paneer-tikka.jpg',
+  butterChicken: 'assets/images/non-vegetarian/butter-chicken.jpg',
   interior: 'assets/images/Home.jpg',
   about: 'assets/images/Home.jpg',
   chef: null,

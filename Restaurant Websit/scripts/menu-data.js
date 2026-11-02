@@ -150,8 +150,8 @@
             ingredients: null,
             description,
             keywords,
-            imageKey: null,
-            imageStatus: 'missing',
+            imageKey: name === 'Paneer Tikka' ? 'paneerTikka' : name === 'Butter Chicken' ? 'butterChicken' : null,
+            imageStatus: name === 'Paneer Tikka' || name === 'Butter Chicken' ? 'verified' : 'NEEDS_VERIFICATION',
             availability: 'requires-confirmation',
             bestseller: null,
             featured: [1, 8, 16, 20, 26, 40, 50, 57].includes(index + 1)
@@ -173,7 +173,7 @@
             description: null,
             keywords: `${name}, ${category}, ${subcategory}`,
             imageKey: null,
-            imageStatus: 'missing',
+            imageStatus: 'NEEDS_VERIFICATION',
             availability: 'requires-confirmation',
             bestseller: null,
             featured: false
@@ -190,9 +190,9 @@
         if (!item.name.trim() || !categories[item.group] || !item.category || !item.subcategory ||
             !['vegetarian', 'non-vegetarian', 'unverified'].includes(item.foodType) ||
             !Number.isInteger(item.priceRupees) || item.priceRupees < 0 ||
-            !item.keywords.trim() || !['missing', 'mapped'].includes(item.imageStatus) ||
-            (item.imageStatus === 'missing' && item.imageKey !== null) ||
-            (item.imageStatus === 'mapped' && typeof item.imageKey !== 'string') ||
+            !item.keywords.trim() || !['NEEDS_VERIFICATION', 'verified'].includes(item.imageStatus) ||
+            (item.imageStatus === 'NEEDS_VERIFICATION' && item.imageKey !== null) ||
+            (item.imageStatus === 'verified' && typeof item.imageKey !== 'string') ||
             !['available', 'unavailable', 'requires-confirmation'].includes(item.availability)) {
             throw new Error(`Invalid menu record: ${item.name}`);
         }
