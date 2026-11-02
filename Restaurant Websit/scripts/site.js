@@ -79,7 +79,7 @@
         navToggle.textContent = 'Menu';
       });
     });
-    siteHeader.addEventListener('keydown', (event) => {
+    document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && nav.classList.contains('is-open')) {
         nav.classList.remove('is-open');
         navToggle.setAttribute('aria-expanded', 'false');
