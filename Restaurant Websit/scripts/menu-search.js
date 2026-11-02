@@ -49,6 +49,8 @@
     }
 
     function createIndex(items) {
+        const nameVocabulary = new Set();
+        const detailVocabulary = new Set();
         const indexed = items.map((item) => {
             const name = normalize(item.name);
             const nameWords = name.split(' ');
@@ -60,8 +62,32 @@
                 ...(Array.isArray(item.ingredients) ? item.ingredients : [])
             ].join(' ')).split(' ').filter(Boolean);
             const dietWords = normalize(item.foodType || '').split(' ').filter(Boolean);
-            return { item, name, nameWords, categoryWords, subcategoryWords, detailWords, dietWords };
+            const nameWordSet = new Set(nameWords);
+            const detailWordSet = new Set([...categoryWords, ...subcategoryWords, ...detailWords, ...dietWords]);
+            nameWords.forEach((word) => nameVocabulary.add(word));
+            detailWordSet.forEach((word) => detailVocabulary.add(word));
+            return { item, name, nameWords, nameWordSet, categoryWords, subcategoryWords, detailWords, dietWords, detailWordSet };
         });
+        const fuzzyCache = new Map();
+
+        function fuzzyCandidates(term) {
+            if (fuzzyCache.has(term)) return fuzzyCache.get(term);
+            const limit = term.length >= 7 ? 2 : 1;
+            const matches = { names: [], details: [] };
+            for (const word of nameVocabulary) {
+                if (Math.abs(word.length - term.length) <= limit && editDistance(term, word, limit) <= limit) {
+                    matches.names.push(word);
+                }
+            }
+            for (const word of detailVocabulary) {
+                if (Math.abs(word.length - term.length) <= limit && editDistance(term, word, limit) <= limit) {
+                    matches.details.push(word);
+                }
+            }
+            if (fuzzyCache.size >= 128) fuzzyCache.delete(fuzzyCache.keys().next().value);
+            fuzzyCache.set(term, matches);
+            return matches;
+        }
 
         function search(query, filters = {}) {
             const normalizedQuery = normalize(String(query).trim().split(/\s+/)
@@ -108,15 +134,9 @@
                                 }
                             }
                             if (!best && term.length >= 4) {
-                                const limit = term.length >= 7 ? 2 : 1;
-                                for (const words of [entry.nameWords, entry.categoryWords, entry.subcategoryWords, entry.dietWords, entry.detailWords]) {
-                                    for (const word of words) {
-                                        if (Math.abs(word.length - term.length) <= limit &&
-                                            editDistance(term, word, limit) <= limit) {
-                                            best = Math.max(best, words === entry.nameWords ? 220 : 140);
-                                        }
-                                    }
-                                }
+                                const candidates = fuzzyCandidates(term);
+                                if (candidates.names.some((word) => entry.nameWordSet.has(word))) best = 220;
+                                else if (candidates.details.some((word) => entry.detailWordSet.has(word))) best = 140;
                             }
                             if (!best) {
                                 allTermsMatch = false;
