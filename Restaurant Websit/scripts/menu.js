@@ -258,7 +258,10 @@
         const categoryOptions = groups.map((category) => ({
             type: 'category',
             ...category,
-            count: items.filter((item) => item.group === category.group).length
+            count: engine.search(queryActive ? engine.expandAlias(query) : '', {
+                ...selectedFilters(),
+                group: category.group
+            }).length
         }));
         visibleSuggestions = [...dishOptions, ...categoryOptions];
         activeSuggestion = -1;
