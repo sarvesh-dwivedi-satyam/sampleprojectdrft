@@ -102,7 +102,7 @@
     }
 
     function appendHighlighted(target, value, query) {
-        const normalizedQuery = engine.normalize(query);
+        const normalizedQuery = engine.normalize(engine.expandAlias(query));
         const terms = normalizedQuery.split(' ').filter(Boolean);
         if (!terms.length) {
             target.textContent = value;
