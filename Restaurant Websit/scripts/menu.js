@@ -143,7 +143,10 @@
 
         const body = element('div', 'menu-card__body');
         const badges = element('div', 'menu-card__badges');
-        badges.append(element('span', 'menu-card__category', `${item.category} · ${item.subcategory}`));
+        const categoryLabel = engine.normalize(item.category) === engine.normalize(item.subcategory)
+            ? item.category
+            : `${item.category} · ${item.subcategory}`;
+        badges.append(element('span', 'menu-card__category', categoryLabel));
         if (item.foodType === 'vegetarian' || item.foodType === 'non-vegetarian') {
             const diet = element('span', `diet-indicator ${item.foodType === 'vegetarian' ? 'diet-indicator--veg' : 'diet-indicator--nonveg'}`);
             const marker = element('span', 'diet-indicator__mark');
