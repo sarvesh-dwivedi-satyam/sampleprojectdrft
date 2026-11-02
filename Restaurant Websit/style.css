@@ -477,6 +477,15 @@ body > main > .special-offers {
     text-align: center;
 }
 
+.dish-photo-placeholder::after {
+    content: "Dish photo unavailable";
+}
+
+.food-plate__image .gallery-placeholder {
+    height: 100%;
+    aspect-ratio: auto;
+}
+
 .experience-points {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

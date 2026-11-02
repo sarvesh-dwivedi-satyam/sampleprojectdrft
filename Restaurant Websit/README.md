@@ -71,7 +71,7 @@ For the actual PostgreSQL schema and setup process, see `DATABASE_SETUP.md`. For
 - **Accounts:** stored in the `users` table. Existing installations with a `customers` table are migrated by renaming it when `npm run db:init` runs. Password-only accounts require password verification before adding a Google identity.
 - **Google sign-in:** optional server-side OpenID Connect. Configure all three `GOOGLE_*` variables to enable it; without credentials, traditional email/password authentication remains available.
 - **Database:** the schema is in `database/schema.sql`. It includes seeded sample dishes and a session store created by the PostgreSQL session adapter. This is a raw PostgreSQL implementation, not Prisma.
-- **Public menu preview:** the 60-item display catalog and illustrative prices are centralized in `scripts/menu-data.js`. These preview prices are not connected to the server menu, cart, or checkout; confirm the catalog and pricing, then integrate them with the authoritative server menu before enabling ordering.
+- **Public menu preview:** the 880-item display catalog, categories, and illustrative prices are centralized in `scripts/menu-data.js`. Live ranked search, typo tolerance, filters, sorting, and progressive rendering are provided by `scripts/menu-search.js` and `scripts/menu.js`. These preview prices and records are not connected to the server menu, cart, or checkout; confirm the catalog and pricing, then integrate them with the authoritative server menu before enabling ordering.
 - **Reservations:** guest requests are persisted and serialized per date/time slot; the default capacity of 40 is a placeholder and must be replaced with actual table/slot policy.
 - **Reservation time zone:** `BUSINESS_TIME_ZONE` defaults to `Asia/Kolkata`; set the verified restaurant time zone.
 - **Orders:** prices and totals are calculated from current database menu prices on the server. `TAX_RATE_BASIS_POINTS=0` and `DELIVERY_FEE_PAISE=0` are intentionally neutral placeholders. Ordering remains disabled until actual rates and rules have been confirmed and `PRICING_CONFIRMED=true` is set.
@@ -89,7 +89,7 @@ Other package scripts are `npm start`, `npm run dev`, `npm run db:init`, and `np
 
 - Menu prices/dishes, address, hours, slot capacity, tax, delivery, terms, privacy, and restaurant contact channels are placeholders. Confirm them before launch.
 - Replace `example.com` in `sitemap.xml` and `robots.txt` with the verified production domain.
-- The provided `L1.jpg` is atmospheric artwork, not food photography. Plate and gallery artwork are explicitly styled placeholders; supply licensed restaurant photography.
+- The provided `L1.jpg` is atmospheric artwork, not food photography. The `Home.jpg` interior photo is used only in restaurant-context sections. No dish photographs are available; all menu items use clearly labeled neutral placeholders until suitable photography is supplied.
 - Discount codes, refunds, and newsletter opt-in are not implemented.
 - Separate category, offer, review, payment, contact-message, and newsletter database models are not implemented. Categories are stored as text on menu items; payment state is stored on orders; contact forms are emailed rather than persisted.
 - Customer contact enquiries/password reset need a configured and tested SMTP provider. Verify delivery, SPF/DKIM, and error monitoring.

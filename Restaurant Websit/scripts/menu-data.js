@@ -158,9 +158,10 @@
         };
     });
 
+    let nextId = legacy.length + 1;
     const generated = expansion.flatMap(([group, category, subcategory, foodType, names], groupIndex) =>
         names.split('|').map((name, itemIndex) => ({
-            id: `mb-${String(legacy.length + groupIndex * 20 + itemIndex + 1).padStart(4, '0')}`,
+            id: `mb-${String(nextId++).padStart(4, '0')}`,
             name,
             category,
             group,
@@ -186,7 +187,13 @@
         const normalizedName = item.name.toLocaleLowerCase('en');
         if (ids.has(item.id)) throw new Error(`Duplicate menu ID: ${item.id}`);
         if (names.has(normalizedName)) throw new Error(`Duplicate menu name: ${item.name}`);
-        if (!categories[item.group] || !Number.isInteger(item.priceRupees) || item.priceRupees < 0) {
+        if (!item.name.trim() || !categories[item.group] || !item.category || !item.subcategory ||
+            !['vegetarian', 'non-vegetarian', 'unverified'].includes(item.foodType) ||
+            !Number.isInteger(item.priceRupees) || item.priceRupees < 0 ||
+            !item.keywords.trim() || !['missing', 'mapped'].includes(item.imageStatus) ||
+            (item.imageStatus === 'missing' && item.imageKey !== null) ||
+            (item.imageStatus === 'mapped' && typeof item.imageKey !== 'string') ||
+            !['available', 'unavailable', 'requires-confirmation'].includes(item.availability)) {
             throw new Error(`Invalid menu record: ${item.name}`);
         }
         ids.add(item.id);
