@@ -18,7 +18,6 @@
         maximumFractionDigits: 0
     });
     const categoryLabels = window.MidnightMenuCategories;
-    let searchTimer;
 
     function normalize(value) {
         return String(value)
@@ -122,7 +121,6 @@
     }
 
     function render() {
-        window.clearTimeout(searchTimer);
         clearSearch.hidden = !search.value;
         const values = new FormData(form);
         const query = normalize(values.get('search') || '');
@@ -178,12 +176,9 @@
     form.addEventListener('submit', (event) => event.preventDefault());
     form.addEventListener('input', (event) => {
         if (event.target === search) {
-            window.clearTimeout(searchTimer);
             clearSearch.hidden = !search.value;
-            searchTimer = window.setTimeout(render, 120);
-        } else {
-            render();
         }
+        render();
     });
     form.addEventListener('change', render);
     form.addEventListener('reset', () => window.setTimeout(render, 0));
