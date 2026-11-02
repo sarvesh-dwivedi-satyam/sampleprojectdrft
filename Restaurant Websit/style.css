@@ -367,12 +367,6 @@ body > header nav a[aria-current="page"] {
     color: var(--color-gold);
 }
 
-.featured-dishes article p:last-child {
-    margin-bottom: 0;
-    color: var(--color-text-primary);
-    font-weight: 600;
-}
-
 .food-categories > ul {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -483,6 +477,32 @@ body > main > .special-offers {
     text-align: center;
 }
 
+.experience-points {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.experience-points li {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: rgb(18 18 18 / 45%);
+}
+
+.experience-points h3 {
+    margin-bottom: var(--space-2);
+    color: var(--color-gold);
+    font-size: 1.2rem;
+}
+
+.experience-points p {
+    margin: 0;
+}
+
 .gallery figcaption {
     padding: 0 var(--space-3) var(--space-3);
 }
@@ -569,41 +589,20 @@ body > footer > p:last-child {
     text-align: center;
 }
 
-.food-plate__disc {
-    display: grid;
+.food-plate__image {
     width: clamp(10rem, 23vw, 17rem);
     aspect-ratio: 1;
-    place-items: center;
-    padding: 1rem;
-    border: 0.65rem solid #d5c7b5;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle, #581b25 0 22%, #d4a373 23% 24%, #1e1a19 25% 44%, #c5a059 45% 46%, #28211e 47% 100%);
-    box-shadow:
-        inset 0 0 0 0.35rem #f5e6d3,
-        0 1.25rem 3rem rgb(0 0 0 / 35%);
-    color: var(--color-text-primary);
-    transition:
-        transform 450ms cubic-bezier(0.2, 0.75, 0.25, 1),
-        box-shadow var(--transition-standard);
-    will-change: transform;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-large);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
 }
 
-.food-plate:hover .food-plate__disc {
-    box-shadow:
-        inset 0 0 0 0.35rem #f5e6d3,
-        0 1.25rem 3rem rgb(0 0 0 / 35%),
-        0 0 1.5rem rgb(197 160 89 / 18%);
-}
-
-.food-plate__disc span {
-    max-width: 9ch;
-    padding: 0.45rem 0.65rem;
-    border-radius: var(--radius-small);
-    background: rgb(18 18 18 / 88%);
-    color: var(--color-text-primary);
-    font-size: 0.8rem;
-    line-height: 1.4;
+.food-plate__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .food-plate h3 {
@@ -617,6 +616,71 @@ body > footer > p:last-child {
 .newsletter > p {
     max-width: 42rem;
     margin: 0 auto var(--space-4);
+}
+
+.nav-toggle {
+    display: none;
+    min-width: 5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.85rem;
+    border-color: var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.nav-toggle:hover {
+    border-color: var(--color-gold);
+    color: var(--color-gold);
+}
+
+@media (max-width: 58rem) {
+    .experience-points {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 48rem) {
+    .site-header.has-mobile-nav {
+        position: relative;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+    }
+
+    .site-header.has-mobile-nav .nav-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .site-header.has-mobile-nav nav:not(.is-open) {
+        display: none;
+    }
+
+    .site-header.has-mobile-nav nav.is-open {
+        display: block;
+        width: 100%;
+        padding-block: var(--space-2);
+        border-top: 1px solid var(--color-border);
+    }
+
+    .site-header.has-mobile-nav nav ul {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .site-header.has-mobile-nav nav a {
+        display: flex;
+        width: 100%;
+        min-height: 2.9rem;
+        align-items: center;
+        padding-inline: var(--space-2);
+    }
 }
 
 @media (max-width: 58rem) {

@@ -19,8 +19,8 @@
     </script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="pages.css">
+    <script src="scripts/image-config.js" defer></script>
     <script src="scripts/site.js" defer></script>
-    <script src="scripts/plate-motion.js" defer></script>
 </head>
 <body>
     <header>
@@ -41,17 +41,17 @@
     <main>
         <section class="hero" aria-labelledby="hero-heading">
             <div class="hero__content">
-                <p class="eyebrow">Premium experience. Accessible luxury.</p>
-                <h1 id="hero-heading">Where Every Bite Feels Extraordinary</h1>
-                <p>Experience the true warmth of Indian hospitality in our cozy, inviting space, where every dish is a masterpiece of rich flavors and exceptional quality.</p>
+                <p class="eyebrow">Luxury Within Every Bite.</p>
+                <h1 id="hero-heading">An evening shaped by Indian hospitality</h1>
+                <p>Settle into a warmly lit bistro for expressive Indian flavours, thoughtful cooking, and the pleasure of sharing one more dish.</p>
                 <p>
                     <a class="button button--primary" href="menu.html">Explore the Menu</a>
                     <a class="button button--secondary" href="reservation.html">Reserve a Table</a>
                 </p>
             </div>
             <figure class="hero__image">
-                <img src="assets/images/L1.jpg" alt="Atmospheric illustration of a dimly lit restaurant setting with warm golden lighting">
-                <figcaption>Midnight Bistro's warm, atmospheric inspiration.</figcaption>
+                <img src="assets/images/L1.jpg" data-site-image="hero" alt="Atmospheric restaurant artwork used as a temporary Midnight Bistro hero image">
+                <figcaption>A first glimpse of the Midnight Bistro mood.</figcaption>
             </figure>
         </section>
 
@@ -68,53 +68,44 @@
                     <article>
                         <h3>Paneer Tikka</h3>
                         <p>Char-grilled paneer with a fragrant house spice marinade.</p>
-                        <p>Sample price: &#8377;329</p>
                     </article>
                 </li>
                 <li>
                     <article>
-                        <h3>Tandoori Chicken</h3>
-                        <p>Smoky tandoor-roasted chicken served with mint chutney.</p>
-                        <p>Sample price: &#8377;449</p>
+                        <h3>Chicken Tikka</h3>
+                        <p>Yogurt-marinated chicken, charred with ginger and smoky spices.</p>
                     </article>
                 </li>
                 <li>
                     <article>
-                        <h3>Hyderabadi Dum Biryani</h3>
-                        <p>Layered basmati rice with aromatic spices and slow-cooked flavour.</p>
-                        <p>Sample price: &#8377;429</p>
+                        <h3>Chicken Biryani</h3>
+                        <p>Tender chicken and fragrant basmati layered with aromatic spices.</p>
                     </article>
                 </li>
             </ul>
         </section>
 
         <section class="food-plates" aria-labelledby="plates-heading">
-            <p class="eyebrow">A little theatre at the table</p>
+            <p class="eyebrow">A note from the kitchen</p>
             <h2 id="plates-heading">Made to Be Savoured</h2>
-            <p>Illustrated plate placeholders move gently as you scroll. Replace them with approved dish photography when available.</p>
+            <p>Explore a few kitchen favourites. The artwork below is a temporary image and will be replaced with approved dish photography.</p>
             <ul class="food-plates__list">
                 <li>
-                    <article class="food-plate" data-food-plate>
-                        <div class="food-plate__disc" role="img" aria-label="Illustrated circular plate placeholder for Paneer Tikka photography">
-                            <span>Paneer Tikka<br>Photo placeholder</span>
-                        </div>
+                    <article class="food-plate">
+                        <figure class="food-plate__image"><img src="assets/images/L1.jpg" data-site-image="dish" alt="Temporary restaurant artwork representing Paneer Tikka" loading="lazy"></figure>
                         <h3>Paneer Tikka</h3>
                     </article>
                 </li>
                 <li>
-                    <article class="food-plate" data-food-plate>
-                        <div class="food-plate__disc" role="img" aria-label="Illustrated circular plate placeholder for biryani photography">
-                            <span>Dum Biryani<br>Photo placeholder</span>
-                        </div>
-                        <h3>Dum Biryani</h3>
+                    <article class="food-plate">
+                        <figure class="food-plate__image"><img src="assets/images/L1.jpg" data-site-image="dish" alt="Temporary restaurant artwork representing Chicken Biryani" loading="lazy"></figure>
+                        <h3>Chicken Biryani</h3>
                     </article>
                 </li>
                 <li>
-                    <article class="food-plate" data-food-plate>
-                        <div class="food-plate__disc" role="img" aria-label="Illustrated circular plate placeholder for a dessert photography">
-                            <span>House Dessert<br>Photo placeholder</span>
-                        </div>
-                        <h3>Chef's Dessert</h3>
+                    <article class="food-plate">
+                        <figure class="food-plate__image"><img src="assets/images/L1.jpg" data-site-image="dessert" alt="Temporary restaurant artwork representing Gulab Jamun" loading="lazy"></figure>
+                        <h3>Gulab Jamun</h3>
                     </article>
                 </li>
             </ul>
@@ -123,9 +114,9 @@
         <section class="food-categories" aria-labelledby="categories-heading">
             <h2 id="categories-heading">Explore Our Categories</h2>
             <ul>
-                <li><a href="menu.html?category=Indian%20Starters">Indian Starters</a></li>
-                <li><a href="menu.html?category=North%20Indian%20Main%20Course">Main Course</a></li>
-                <li><a href="menu.html?category=Biryani%20and%20Rice">Biryani</a></li>
+                <li><a href="menu.html?category=starters">Indian Starters</a></li>
+                <li><a href="menu.html?category=main-course">Main Course</a></li>
+                <li><a href="menu.html?category=rice-biryani">Biryani</a></li>
                 <li><a href="menu.html?category=Desserts">Desserts</a></li>
                 <li><a href="menu.html?category=Beverages">Beverages</a></li>
             </ul>
@@ -133,8 +124,13 @@
         </section>
 
         <section class="special-offers" aria-labelledby="offers-heading">
-            <h2 id="offers-heading">Special Offers</h2>
-            <p>Seasonal offers and dining experiences will be announced here.</p>
+            <h2 id="offers-heading">The Midnight experience</h2>
+            <p>Premium hospitality should feel special without feeling out of reach. We are shaping every detail around good food, warm service, and an easy welcome.</p>
+            <ul class="experience-points">
+                <li><h3>Indian flavours, thoughtfully prepared</h3><p>Familiar favourites and comforting classics sit side by side.</p></li>
+                <li><h3>Room to slow down</h3><p>A warm, intimate setting for everyday dinners and meaningful occasions.</p></li>
+                <li><h3>Hospitality that feels personal</h3><p>Attentive care and generous spirit are at the heart of the experience.</p></li>
+            </ul>
         </section>
 
         <section class="testimonials" aria-labelledby="testimonials-heading">
@@ -148,23 +144,23 @@
 
         <section class="gallery" aria-labelledby="gallery-heading">
             <h2 id="gallery-heading">A Glimpse of Midnight Bistro</h2>
-            <p>Gallery image placeholders. Replace these paths with approved restaurant photography.</p>
+            <p>Atmospheric artwork used temporarily while approved restaurant photography is prepared.</p>
             <ul>
                 <li>
                     <figure>
-                        <div class="gallery-placeholder" role="img" aria-label="Photograph of the Midnight Bistro dining room not yet supplied"></div>
+                        <img src="assets/images/L1.jpg" data-site-image="interior" alt="Temporary atmospheric restaurant artwork representing the dining room" loading="lazy">
                         <figcaption>Dining room</figcaption>
                     </figure>
                 </li>
                 <li>
                     <figure>
-                        <div class="gallery-placeholder" role="img" aria-label="Photograph of a Midnight Bistro signature dish not yet supplied"></div>
+                        <img src="assets/images/L1.jpg" data-site-image="dish" alt="Temporary atmospheric restaurant artwork representing a signature dish" loading="lazy">
                         <figcaption>Signature dish</figcaption>
                     </figure>
                 </li>
                 <li>
                     <figure>
-                        <div class="gallery-placeholder" role="img" aria-label="Photograph of the Midnight Bistro hospitality experience not yet supplied"></div>
+                        <img src="assets/images/L1.jpg" data-site-image="experience" alt="Temporary atmospheric restaurant artwork representing the guest experience" loading="lazy">
                         <figcaption>Our hospitality</figcaption>
                     </figure>
                 </li>

@@ -50,18 +50,40 @@
     document.querySelectorAll('[data-cart-count]').forEach((node) => { node.textContent = String(total); });
   }
 
-  const navToggle = document.querySelector('.nav-toggle');
-  const nav = document.querySelector('#primary-navigation');
-  if (navToggle && nav) {
+  const siteHeader = document.querySelector('body > header');
+  const nav = siteHeader && siteHeader.querySelector('nav[aria-label="Primary navigation"]');
+  if (siteHeader && nav) {
+    siteHeader.classList.add('site-header');
+    if (!nav.id) nav.id = 'primary-navigation';
+    const navToggle = document.createElement('button');
+    navToggle.className = 'nav-toggle';
+    navToggle.type = 'button';
+    navToggle.setAttribute('aria-controls', nav.id);
+    navToggle.setAttribute('aria-expanded', 'false');
+    navToggle.setAttribute('aria-label', 'Open navigation');
+    navToggle.textContent = 'Menu';
+    siteHeader.insertBefore(navToggle, nav);
+    siteHeader.classList.add('has-mobile-nav');
+
     navToggle.addEventListener('click', () => {
       const open = nav.classList.toggle('is-open');
       navToggle.setAttribute('aria-expanded', String(open));
+      navToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
     });
     nav.querySelectorAll('a').forEach((link) => {
       link.addEventListener('click', () => {
         nav.classList.remove('is-open');
         navToggle.setAttribute('aria-expanded', 'false');
+        navToggle.setAttribute('aria-label', 'Open navigation');
       });
+    });
+    siteHeader.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && nav.classList.contains('is-open')) {
+        nav.classList.remove('is-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+        navToggle.setAttribute('aria-label', 'Open navigation');
+        navToggle.focus();
+      }
     });
   }
 

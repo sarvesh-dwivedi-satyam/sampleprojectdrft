@@ -58,16 +58,26 @@
         return aliases[requested] || requested;
     }
 
-    function buildSearchText(item) {
-        const diet = item.vegetarian ? 'vegetarian veg' : 'non vegetarian nonveg';
-        return normalize([
+    function buildSearchTokens(item) {
+        return new Set(normalize([
             item.name,
             item.category,
             categoryLabels[item.group] || item.group,
-            diet,
             item.description,
             item.keywords
-        ].join(' '));
+        ].join(' ')).split(' '));
+    }
+
+    function matchesSearch(item, query) {
+        if (!query) return true;
+        const terms = query.split(' ');
+        const wantsNonVegetarian = terms.includes('non') || terms.includes('nonveg');
+        const wantsVegetarian = !wantsNonVegetarian && (terms.includes('veg') || terms.includes('vegetarian'));
+        if (wantsNonVegetarian && item.vegetarian) return false;
+        if (wantsVegetarian && !item.vegetarian) return false;
+        const textTerms = terms.filter((term) => !['veg', 'vegetarian', 'non', 'nonveg'].includes(term));
+        const tokens = buildSearchTokens(item);
+        return textTerms.every((term) => tokens.has(term));
     }
 
     function renderCard(item) {
@@ -121,10 +131,10 @@
         const sort = String(values.get('sort') || 'featured');
 
         let visible = items.filter((item) => {
-            const matchesSearch = !query || buildSearchText(item).includes(query);
+            const matchesItemSearch = matchesSearch(item, query);
             const matchesCategory = !category || item.group === category;
             const matchesDiet = !diet || (diet === 'vegetarian' ? item.vegetarian : !item.vegetarian);
-            return matchesSearch && matchesCategory && matchesDiet;
+            return matchesItemSearch && matchesCategory && matchesDiet;
         });
 
         if (sort === 'price-low') {
