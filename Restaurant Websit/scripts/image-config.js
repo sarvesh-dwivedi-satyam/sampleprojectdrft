@@ -14,6 +14,23 @@ window.MidnightImages = Object.freeze({
   experience: 'assets/images/Home.jpg'
 });
 
+window.MidnightImageDetails = Object.freeze({
+  paneerTikka: Object.freeze({
+    width: 1280,
+    height: 854,
+    creator: 'Charles Haynes',
+    license: 'CC BY-SA 2.0',
+    sourcePage: 'https://commons.wikimedia.org/wiki/File:Paneer_Tikka.jpg'
+  }),
+  butterChicken: Object.freeze({
+    width: 1280,
+    height: 960,
+    creator: 'Vis M',
+    license: 'CC BY-SA 4.0',
+    sourcePage: 'https://commons.wikimedia.org/wiki/File:Butter_Chicken,_City_Grill_Kottayam.jpg'
+  })
+});
+
 document.querySelectorAll('[data-site-image]').forEach((image) => {
   const imagePath = window.MidnightImages[image.dataset.siteImage];
   if (!imagePath) {

@@ -93,8 +93,22 @@
             image.alt = `Photograph of ${item.name}`;
             image.loading = 'lazy';
             image.decoding = 'async';
+            const details = window.MidnightImageDetails[item.imageKey];
+            if (details) {
+                image.width = details.width;
+                image.height = details.height;
+                image.title = `Photo by ${details.creator} (${details.license})`;
+            }
+            image.addEventListener('error', () => {
+                console.error(`Menu image failed to load for "${item.name}": ${path}`);
+                image.replaceWith(imageFallback(item, compact));
+            }, { once: true });
             return image;
         }
+        return imageFallback(item, compact);
+    }
+
+    function imageFallback(item, compact = false) {
         const fallback = element('span', `menu-image-fallback${compact ? ' menu-image-fallback--compact' : ''}`, 'Dish photo unavailable');
         fallback.setAttribute('role', 'img');
         fallback.setAttribute('aria-label', `No dish-specific photograph is available for ${item.name}`);
@@ -140,6 +154,21 @@
         const card = element('article', 'menu-card');
         const figure = element('figure', 'menu-card__image');
         figure.append(imageFor(item));
+        const photoCredit = item.imageKey && window.MidnightImageDetails[item.imageKey];
+        if (photoCredit) {
+            const caption = element('figcaption', 'menu-card__photo-credit');
+            caption.append(
+                document.createTextNode(`Photo: ${photoCredit.creator} · `),
+                element('span', '', photoCredit.license),
+                document.createTextNode(' · ')
+            );
+            const source = element('a', '', 'Source');
+            source.href = photoCredit.sourcePage;
+            source.target = '_blank';
+            source.rel = 'license noopener noreferrer';
+            caption.append(source);
+            figure.append(caption);
+        }
 
         const body = element('div', 'menu-card__body');
         const badges = element('div', 'menu-card__badges');
@@ -231,6 +260,8 @@
             const name = element('span', 'search-suggestion__name');
             appendHighlighted(name, option.item.name, query);
             content.append(name, element('span', 'search-suggestion__meta', `${option.item.category} · ${option.item.foodType === 'unverified' ? 'Food type unverified' : option.item.foodType}`));
+            const credit = option.item.imageKey && window.MidnightImageDetails[option.item.imageKey];
+            if (credit) content.append(element('span', 'search-suggestion__photo-credit', `Photo by ${credit.creator} · ${credit.license}`));
             const price = element('strong', 'search-suggestion__price', currency.format(option.item.priceRupees));
             button.append(content, price);
         } else {

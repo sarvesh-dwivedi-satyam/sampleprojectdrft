@@ -347,6 +347,25 @@
     object-position: center;
 }
 
+.menu-card__image .menu-card__photo-credit {
+    margin: 0;
+    padding: 0.3rem 0.65rem;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 0.68rem;
+    line-height: 1.4;
+}
+
+.menu-card__photo-credit a {
+    color: var(--color-gold);
+}
+
+.search-suggestion__photo-credit {
+    color: var(--color-text-secondary);
+    font-size: 0.65rem;
+    line-height: 1.25;
+}
+
 .menu-card__badges {
     display: flex;
     flex-wrap: wrap;
