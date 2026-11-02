@@ -13,6 +13,7 @@
     <script src="scripts/image-config.js" defer></script>
     <script src="scripts/site.js" defer></script>
     <script src="scripts/menu-data.js" defer></script>
+    <script src="scripts/menu-search.js" defer></script>
     <script src="scripts/menu.js" defer></script>
 </head>
 <body>
@@ -45,27 +46,25 @@
                     <label for="menu-search">Search the menu</label>
                     <span class="search-field">
                         <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
-                        <input id="menu-search" name="search" type="search" placeholder="Try paneer, smoky, or biryani" autocomplete="off">
+                        <input id="menu-search" name="search" type="search" placeholder="Try paneer, chiken, or biryani" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="menu-suggestions">
                         <button class="search-clear" type="button" data-clear-search aria-label="Clear search" hidden>Clear</button>
                     </span>
+                    <div class="search-suggestions" id="menu-suggestions" role="listbox" aria-label="Menu search suggestions" hidden></div>
                 </div>
                 <label for="menu-category">Category
                     <select id="menu-category" name="category">
                         <option value="">All items</option>
-                        <option value="starters">Starters &amp; Small Plates</option>
-                        <option value="soups">Soups</option>
-                        <option value="main-course">Main Course</option>
-                        <option value="rice-biryani">Rice &amp; Biryani</option>
-                        <option value="breads">Breads</option>
-                        <option value="desserts">Desserts</option>
-                        <option value="beverages">Beverages</option>
                     </select>
                 </label>
-                <label for="menu-diet">Food preference
+                <label for="menu-subcategory">Subcategory
+                    <select id="menu-subcategory" name="subcategory"><option value="">All subcategories</option></select>
+                </label>
+                <label for="menu-diet">Food type
                     <select id="menu-diet" name="diet">
                         <option value="">All dishes</option>
                         <option value="vegetarian">Vegetarian</option>
                         <option value="non-vegetarian">Non-vegetarian</option>
+                        <option value="vegan">Vegan (verified only)</option>
                     </select>
                 </label>
                 <label for="menu-sort">Sort by
@@ -73,9 +72,28 @@
                         <option value="featured">Recommended</option>
                         <option value="price-low">Price: low to high</option>
                         <option value="price-high">Price: high to low</option>
-                        <option value="name">Name: A to Z</option>
+                        <option value="name-asc">Name: A to Z</option>
+                        <option value="name-desc">Name: Z to A</option>
                     </select>
                 </label>
+                <label for="menu-bestseller">Bestseller
+                    <select id="menu-bestseller" name="bestseller">
+                        <option value="">All items</option>
+                        <option value="true">Verified bestsellers only</option>
+                    </select>
+                </label>
+                <label for="menu-availability">Availability
+                    <select id="menu-availability" name="availability">
+                        <option value="">All statuses</option>
+                        <option value="requires-confirmation">Needs confirmation</option>
+                        <option value="available">Confirmed available only</option>
+                    </select>
+                </label>
+                <fieldset class="price-range">
+                    <legend>Sample price range (₹)</legend>
+                    <label for="menu-min-price">Min price<input id="menu-min-price" name="minPrice" type="number" min="0" step="1" inputmode="numeric" placeholder="No minimum"></label>
+                    <label for="menu-max-price">Max price<input id="menu-max-price" name="maxPrice" type="number" min="0" step="1" inputmode="numeric" placeholder="No maximum"></label>
+                </fieldset>
             </form>
             <div class="suggested-searches" aria-label="Suggested searches">
                 <span>Try</span>
@@ -86,6 +104,10 @@
                 <button class="clear-filters" type="reset" form="menu-filters">Clear filters</button>
             </div>
             <ul class="menu-grid" data-menu-items aria-label="Menu items"></ul>
+            <div class="menu-pagination">
+                <p class="menu-pagination__status" data-pagination-status></p>
+                <button class="button button--secondary" type="button" data-load-more hidden>Show more dishes</button>
+            </div>
         </section>
     </main>
     <footer class="site-footer">
