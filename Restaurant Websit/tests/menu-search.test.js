@@ -25,8 +25,11 @@ test('catalog contains 500+ unique, valid preview records', () => {
         assert.ok(Number.isInteger(item.priceRupees) && item.priceRupees >= 0);
         assert.ok(['vegetarian', 'non-vegetarian', 'unverified'].includes(item.foodType));
         assert.ok(item.keywords);
-        assert.equal(item.imageKey, null);
-        assert.equal(item.imageStatus, 'missing');
+        if (item.imageStatus === 'verified') assert.ok(item.imageKey);
+        else {
+            assert.equal(item.imageKey, null);
+            assert.equal(item.imageStatus, 'NEEDS_VERIFICATION');
+        }
         assert.equal(item.availability, 'requires-confirmation');
     }
 });
