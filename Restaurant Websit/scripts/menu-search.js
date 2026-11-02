@@ -142,7 +142,7 @@
                                 allTermsMatch = false;
                                 break;
                             }
-                            score += best;
+                            score = Math.max(score, best);
                         }
                         if (!allTermsMatch) continue;
                     }
