@@ -75,6 +75,12 @@
     min-width: 0;
 }
 
+.search-control {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-1);
+}
+
 .search-field {
     position: relative;
     display: flex;
