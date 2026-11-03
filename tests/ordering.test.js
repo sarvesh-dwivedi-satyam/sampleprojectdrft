@@ -1,5 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
 const { createCartStore, DEFAULT_SETTINGS, formatPrice } = require('../scripts/ordering');
 
 function fixture(settings = DEFAULT_SETTINGS) {
@@ -143,4 +146,28 @@ test('formats only safe non-negative prices', () => {
     assert.equal(formatPrice(12_500), '₹125.00');
     assert.throws(() => formatPrice(-1), /invalid price/);
     assert.throws(() => formatPrice(Number.MAX_SAFE_INTEGER + 1), /invalid price/);
+});
+
+test('all 880 centralized menu items can be represented in the preview cart', () => {
+    const browser = { window: {} };
+    const source = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'menu-data.js'), 'utf8');
+    vm.runInNewContext(source, browser, { filename: 'menu-data.js' });
+    const menu = browser.window.MidnightMenu;
+    assert.equal(menu.length, 880);
+
+    let id = 0;
+    const values = new Map();
+    const store = createCartStore({
+        catalog: menu,
+        storage: {
+            getItem: (key) => values.get(key) ?? null,
+            setItem: (key, value) => values.set(key, value),
+            removeItem: (key) => values.delete(key)
+        },
+        createId: () => `menu-entry-${++id}`
+    });
+
+    for (const item of menu) store.add(item.id);
+    assert.equal(store.getEntries().length, menu.length);
+    assert.equal(store.totals().quantity, menu.length);
 });

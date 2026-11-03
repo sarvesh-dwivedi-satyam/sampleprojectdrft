@@ -48,10 +48,10 @@
                 <input id="checkout-postal" name="postalCode" autocomplete="postal-code" inputmode="text" required minlength="3" maxlength="12">
                 <label for="checkout-instructions">Delivery instructions <span>(optional)</span></label>
                 <textarea id="checkout-instructions" name="instructions" rows="2" maxlength="500"></textarea>
-                <fieldset class="checkout-options">
+                <fieldset class="checkout-options" data-fulfillment-options>
                     <legend>Fulfilment</legend>
                 </fieldset>
-                <fieldset class="checkout-options">
+                <fieldset class="checkout-options" data-payment-options>
                     <legend>Payment</legend>
                 </fieldset>
                 <button class="button button--primary" type="submit">Create Preview Confirmation</button>
