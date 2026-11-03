@@ -88,7 +88,7 @@
     function imageFor(item, compact = false) {
         const path = item.imageKey && window.MidnightImages[item.imageKey];
         if (path) {
-            const image = element('img', compact ? 'suggestion-image' : '');
+            const image = element('img', compact ? 'search-suggestion__photo' : '');
             image.src = path;
             image.alt = `Photograph of ${item.name}`;
             image.loading = 'lazy';
@@ -153,7 +153,9 @@
         const listItem = element('li');
         const card = element('article', 'menu-card');
         const figure = element('figure', 'menu-card__image');
-        figure.append(imageFor(item));
+        const photo = element('div', 'menu-card__photo');
+        photo.append(imageFor(item));
+        figure.append(photo);
         const photoCredit = item.imageKey && window.MidnightImageDetails[item.imageKey];
         if (photoCredit) {
             const caption = element('figcaption', 'menu-card__photo-credit');
