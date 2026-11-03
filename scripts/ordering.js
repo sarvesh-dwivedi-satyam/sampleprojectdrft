@@ -9,6 +9,7 @@
         pickupEnabled: false,
         taxRateBasisPoints: 0,
         deliveryFeePaise: 0,
+        fulfillmentMethods: Object.freeze([]),
         paymentMethods: Object.freeze([]),
         customizations: Object.freeze({})
     });
@@ -524,6 +525,9 @@
                 clear.disabled = entries.length === 0;
                 checkout.setAttribute('aria-disabled', String(entries.length === 0));
                 checkout.classList.toggle('is-disabled', entries.length === 0);
+                checkout.tabIndex = entries.length ? 0 : -1;
+                if (entries.length) checkout.href = 'preview-checkout.html';
+                else checkout.removeAttribute('href');
             }
 
             clear.addEventListener('click', () => {
@@ -543,6 +547,8 @@
             const submit = form.querySelector('[type="submit"]');
             const confirmation = doc.querySelector('[data-order-confirmation]');
             const summary = doc.querySelector('[data-confirmation-summary]');
+            const fulfillmentOptions = form.querySelector('[data-fulfillment-options]');
+            const paymentOptions = form.querySelector('[data-payment-options]');
 
             function renderReview() {
                 const entries = store.getEntries();
@@ -563,6 +569,26 @@
                 if (!entries.length) status.textContent = 'Your preview cart is empty.';
             }
 
+            function renderChoices(fieldset, methods, name, emptyMessage) {
+                const legend = fieldset.querySelector('legend');
+                fieldset.replaceChildren(legend);
+                if (!methods.length) {
+                    fieldset.append(element('p', '', emptyMessage));
+                    return;
+                }
+                methods.forEach((method, index) => {
+                    const label = element('label', 'checkout-choice');
+                    const input = element('input');
+                    input.type = 'radio';
+                    input.name = name;
+                    input.value = method.id;
+                    input.required = index === 0;
+                    input.checked = index === 0;
+                    label.append(input, doc.createTextNode(method.label));
+                    fieldset.append(label);
+                });
+            }
+
             function validateFields() {
                 const fullName = form.elements.fullName.value.trim();
                 const phone = form.elements.phone.value.trim();
@@ -578,9 +604,25 @@
                 if (address.length < 5 || address.length > 1000) throw new Error('Enter a complete delivery address.');
                 if (!city || city.length > 120) throw new Error('Enter your city.');
                 if (!/^[A-Za-z0-9 -]{3,12}$/.test(postalCode)) throw new Error('Enter a valid postal code.');
-                return { fullName, phone, email, address, city, postalCode };
+                const fulfillment = form.elements.fulfillment?.value || '';
+                const payment = form.elements.payment?.value || '';
+                if (settings.fulfillmentMethods.length && !fulfillment) throw new Error('Select a fulfillment method.');
+                if (settings.paymentMethods.length && !payment) throw new Error('Select a payment method.');
+                return { fullName, phone, email, address, city, postalCode, fulfillment, payment };
             }
 
+            renderChoices(
+                fulfillmentOptions,
+                settings.fulfillmentMethods,
+                'fulfillment',
+                'Delivery and pickup are not enabled because restaurant configuration has not been confirmed.'
+            );
+            renderChoices(
+                paymentOptions,
+                settings.paymentMethods,
+                'payment',
+                'No payment methods are configured. This preview will not collect payment details.'
+            );
             form.addEventListener('submit', (event) => {
                 event.preventDefault();
                 status.textContent = '';
@@ -603,7 +645,8 @@
                         ...(form.elements.instructions.value.trim()
                             ? [element('p', '', `Delivery instructions: ${form.elements.instructions.value.trim()}`)]
                             : []),
-                        element('p', '', 'Fulfilment: Not configured · Status: Preview only'),
+                        element('p', '', `Fulfilment: ${customer.fulfillment || 'Not configured'} · Status: Preview only`),
+                        ...(customer.payment ? [element('p', '', `Payment selection: ${customer.payment} · Not processed`)] : []),
                         element('p', '', `${entries.length} distinct menu item(s), ${store.totals().quantity} serving(s).`),
                         ...entries.map((entry) => element('p', '', `${entry.dishName} × ${entry.quantity} — ${ordering.formatPrice(entry.itemSubtotalPaise)}`)),
                         element('p', '', `Preview total: ${ordering.formatPrice(store.totals().totalPaise)}.`),

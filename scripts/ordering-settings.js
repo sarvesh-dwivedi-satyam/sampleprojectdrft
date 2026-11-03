@@ -5,6 +5,7 @@ window.MidnightOrderingSettings = Object.freeze({
     pickupEnabled: false,
     taxRateBasisPoints: 0,
     deliveryFeePaise: 0,
+    fulfillmentMethods: Object.freeze([]),
     paymentMethods: Object.freeze([]),
     customizations: Object.freeze({})
 });
