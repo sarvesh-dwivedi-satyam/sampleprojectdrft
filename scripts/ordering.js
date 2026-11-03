@@ -553,6 +553,13 @@
             const summary = doc.querySelector('[data-confirmation-summary]');
             const fulfillmentOptions = form.querySelector('[data-fulfillment-options]');
             const paymentOptions = form.querySelector('[data-payment-options]');
+            const fulfillmentMethods = settings.fulfillmentMethods.length
+                ? settings.fulfillmentMethods
+                : [
+                    ...(settings.deliveryEnabled ? [{ id: 'delivery', label: 'Delivery' }] : []),
+                    ...(settings.pickupEnabled ? [{ id: 'pickup', label: 'Pickup' }] : [])
+                ];
+            const paymentMethods = settings.paymentMethods;
 
             function renderReview() {
                 const entries = store.getEntries();
@@ -608,22 +615,31 @@
                 if (address.length < 5 || address.length > 1000) throw new Error('Enter a complete delivery address.');
                 if (!city || city.length > 120) throw new Error('Enter your city.');
                 if (!/^[A-Za-z0-9 -]{3,12}$/.test(postalCode)) throw new Error('Enter a valid postal code.');
-                const fulfillment = form.elements.fulfillment?.value || '';
-                const payment = form.elements.payment?.value || '';
-                if (settings.fulfillmentMethods.length && !fulfillment) throw new Error('Select a fulfillment method.');
-                if (settings.paymentMethods.length && !payment) throw new Error('Select a payment method.');
-                return { fullName, phone, email, address, city, postalCode, fulfillment, payment };
+                const fulfillmentId = form.elements.fulfillment?.value || '';
+                const paymentId = form.elements.payment?.value || '';
+                if (fulfillmentMethods.length && !fulfillmentId) throw new Error('Select a fulfillment method.');
+                if (paymentMethods.length && !paymentId) throw new Error('Select a payment method.');
+                return {
+                    fullName,
+                    phone,
+                    email,
+                    address,
+                    city,
+                    postalCode,
+                    fulfillment: fulfillmentMethods.find((method) => method.id === fulfillmentId)?.label || '',
+                    payment: paymentMethods.find((method) => method.id === paymentId)?.label || ''
+                };
             }
 
             renderChoices(
                 fulfillmentOptions,
-                settings.fulfillmentMethods,
+                fulfillmentMethods,
                 'fulfillment',
                 'Delivery and pickup are not enabled because restaurant configuration has not been confirmed.'
             );
             renderChoices(
                 paymentOptions,
-                settings.paymentMethods,
+                paymentMethods,
                 'payment',
                 'No payment methods are configured. This preview will not collect payment details.'
             );
