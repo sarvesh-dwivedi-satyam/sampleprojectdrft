@@ -31,7 +31,7 @@
             <p class="eyebrow">Thoughtfully prepared, warmly served</p>
             <h1>Our Menu</h1>
             <p>Discover Indian favourites and bistro classics, prepared for lingering dinners and shared tables.</p>
-            <p class="menu-price-note">All prices are illustrative samples for this preview and must be confirmed. Ordering and checkout are not enabled from these prices.</p>
+            <p class="menu-price-note" data-ordering-status role="status">Preview only: menu prices and availability are not confirmed; no real orders or payments are processed.</p>
         </section>
         <section class="menu-explorer" aria-labelledby="menu-controls-heading">
             <div class="menu-explorer__heading">
@@ -110,11 +110,33 @@
             </div>
         </section>
     </main>
+    <dialog class="dish-dialog" data-dish-dialog aria-labelledby="dish-dialog-title">
+        <div class="dish-dialog__layout">
+            <div class="dish-dialog__image" data-detail-image></div>
+            <div class="dish-dialog__body" data-detail-content></div>
+        </div>
+        <div class="dish-dialog__footer">
+            <div class="quantity-control" aria-label="Quantity">
+                <button class="button button--secondary" type="button" data-quantity-decrease aria-label="Decrease quantity">−</button>
+                <output class="quantity-control__value" data-detail-quantity>1</output>
+                <button class="button button--secondary" type="button" data-quantity-increase aria-label="Increase quantity">+</button>
+            </div>
+            <p class="dish-dialog__total">Illustrative subtotal: <strong data-detail-total></strong></p>
+            <div class="dish-dialog__actions">
+                <button class="button button--secondary" type="button" data-dialog-close>Close</button>
+                <button class="button button--secondary" type="button" data-dialog-add>Add to preview cart</button>
+                <button class="button button--primary" type="button" data-dialog-order>Order Now</button>
+            </div>
+            <p class="notice" data-detail-status role="status" aria-live="polite"></p>
+        </div>
+    </dialog>
+    <p class="notice menu-cart-notice" data-ordering-status role="status" aria-live="polite"></p>
     <footer class="site-footer">
         <a class="brand" href="index.html">Midnight Bistro</a>
         <nav aria-label="Footer navigation"><ul><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="reservation.html">Reservations</a></li></ul></nav>
         <p>Restaurant address and hours to be confirmed.</p>
         <p><small>&copy; 2026 Midnight Bistro.</small></p>
     </footer>
+    <script src="scripts/ordering.js" defer></script>
 </body>
 </html>
