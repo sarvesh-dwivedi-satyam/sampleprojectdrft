@@ -6,6 +6,7 @@ window.MidnightImages = Object.freeze({
   dessert: null,
   dishFallback: null,
   paneerTikka: 'assets/images/starters/paneer-tikka.jpg',
+  malaiPaneerTikka: 'assets/images/starters/malai-paneer-tikka.jpg',
   butterChicken: 'assets/images/non-vegetarian/butter-chicken.jpg',
   interior: 'assets/images/Home.jpg',
   about: 'assets/images/Home.jpg',
@@ -21,6 +22,13 @@ window.MidnightImageDetails = Object.freeze({
     creator: 'Charles Haynes',
     license: 'CC BY-SA 2.0',
     sourcePage: 'https://commons.wikimedia.org/wiki/File:Paneer_Tikka.jpg'
+  }),
+  malaiPaneerTikka: Object.freeze({
+    width: 843,
+    height: 1124,
+    creator: 'PallaviKhale',
+    license: 'CC BY-SA 4.0',
+    sourcePage: 'https://commons.wikimedia.org/wiki/File:Malai_Paneer_Tikka,_PK_007.jpg'
   }),
   butterChicken: Object.freeze({
     width: 1280,

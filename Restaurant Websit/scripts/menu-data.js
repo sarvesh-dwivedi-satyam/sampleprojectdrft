@@ -150,8 +150,8 @@
             ingredients: null,
             description,
             keywords,
-            imageKey: name === 'Paneer Tikka' ? 'paneerTikka' : name === 'Butter Chicken' ? 'butterChicken' : null,
-            imageStatus: name === 'Paneer Tikka' || name === 'Butter Chicken' ? 'verified' : 'NEEDS_VERIFICATION',
+            imageKey: name === 'Paneer Tikka' ? 'paneerTikka' : name === 'Malai Paneer Tikka' ? 'malaiPaneerTikka' : name === 'Butter Chicken' ? 'butterChicken' : null,
+            imageStatus: ['Paneer Tikka', 'Malai Paneer Tikka', 'Butter Chicken'].includes(name) ? 'verified' : 'NEEDS_VERIFICATION',
             availability: 'requires-confirmation',
             bestseller: null,
             featured: [1, 8, 16, 20, 26, 40, 50, 57].includes(index + 1)
