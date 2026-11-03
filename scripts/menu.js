@@ -209,6 +209,7 @@
         const addButton = element('button', 'button button--primary', 'Add to preview cart');
         addButton.type = 'button';
         addButton.dataset.quickAdd = item.id;
+        addButton.disabled = item.availability === 'unavailable';
         actions.append(detailsButton, addButton);
         body.append(footer, actions);
         card.append(figure, body);

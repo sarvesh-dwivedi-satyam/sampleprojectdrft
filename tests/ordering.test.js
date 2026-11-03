@@ -133,6 +133,7 @@ test('only verified settings enable orders and add configured totals', () => {
     }).store;
     configured.add('mb-0003', 2);
     assert.equal(configured.canOrder({ availability: 'available' }), true);
+    assert.equal(configured.canOrder({ availability: 'unavailable' }), false);
     assert.deepEqual(configured.totals(), {
         subtotalPaise: 20_000,
         taxPaise: 1_000,
@@ -140,6 +141,20 @@ test('only verified settings enable orders and add configured totals', () => {
         totalPaise: 25_900,
         quantity: 2
     });
+});
+
+test('rejects invalid ordering rates and totals outside the safe integer range', () => {
+    assert.throws(() => fixture({ ...DEFAULT_SETTINGS, taxRateBasisPoints: 10001 }), /configuration is invalid/);
+    const { store, catalog } = fixture({
+        ...DEFAULT_SETTINGS,
+        orderingEnabled: true,
+        pricingConfirmed: true,
+        taxRateBasisPoints: 10000,
+        deliveryFeePaise: 0
+    });
+    catalog[0].priceRupees = 40_000_000_000_000;
+    store.add('mb-0001', 2);
+    assert.throws(() => store.totals(), /outside the supported range/);
 });
 
 test('formats only safe non-negative prices', () => {

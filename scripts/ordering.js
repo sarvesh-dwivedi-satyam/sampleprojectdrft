@@ -30,6 +30,11 @@
         onWarning = () => {}
     }) {
         if (!Array.isArray(catalog) || !storage) throw new Error('Menu data and browser storage are required.');
+        if (!Number.isInteger(settings.taxRateBasisPoints) || settings.taxRateBasisPoints < 0 ||
+            settings.taxRateBasisPoints > 10000 || !Number.isSafeInteger(settings.deliveryFeePaise) ||
+            settings.deliveryFeePaise < 0) {
+            throw new Error('Ordering price configuration is invalid.');
+        }
         const byId = new Map(catalog.map((item) => [item.id, item]));
 
         function parseCustomizations(item, selections) {
@@ -56,6 +61,7 @@
                     throw new Error(`Choose an option for ${group.label}.`);
                 }
             }
+            if (!Number.isSafeInteger(extraPaise)) throw new Error('Customization pricing is outside the supported range.');
             normalized.sort((left, right) => left.groupId.localeCompare(right.groupId));
             return { normalized, extraPaise };
         }
@@ -197,11 +203,14 @@
             const subtotalPaise = entries.reduce((sum, entry) => sum + entry.itemSubtotalPaise, 0);
             if (!Number.isSafeInteger(subtotalPaise)) throw new Error('The cart total is outside the supported range.');
             const taxPaise = settings.pricingConfirmed
-                ? Math.round(subtotalPaise * settings.taxRateBasisPoints / 10000)
+                ? Number((BigInt(subtotalPaise) * BigInt(settings.taxRateBasisPoints) + 5000n) / 10000n)
                 : 0;
             const deliveryPaise = settings.pricingConfirmed && settings.deliveryEnabled
                 ? settings.deliveryFeePaise
                 : 0;
+            if (!Number.isSafeInteger(taxPaise) || !Number.isSafeInteger(subtotalPaise + taxPaise + deliveryPaise)) {
+                throw new Error('The configured cart total is outside the supported range.');
+            }
             return {
                 subtotalPaise,
                 taxPaise,
@@ -395,13 +404,8 @@
                     }
                     return;
                 }
-                if (event.target.closest('button, a')) {
-                    if (trigger) {
-                        const item = browser.MidnightMenu.find((candidate) => candidate.id === trigger.dataset.openDish);
-                        if (item) open(item);
-                    }
-                    return;
-                }
+                const interactive = event.target.closest('button, a');
+                if (interactive && interactive !== trigger && !interactive.matches('[data-open-dish]')) return;
                 if (trigger) {
                     const item = browser.MidnightMenu.find((candidate) => candidate.id === trigger.dataset.openDish);
                     if (item) open(item);
