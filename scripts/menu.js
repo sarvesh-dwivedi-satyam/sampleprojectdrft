@@ -152,6 +152,7 @@
     function renderCard(item) {
         const listItem = element('li');
         const card = element('article', 'menu-card');
+        card.dataset.openDish = item.id;
         const figure = element('figure', 'menu-card__image');
         const photo = element('div', 'menu-card__photo');
         photo.append(imageFor(item));

@@ -331,10 +331,12 @@
                 selectedItem = item;
                 quantity = 1;
                 selections = [];
+                const title = element('h2', '', item.name);
+                title.id = 'dish-dialog-title';
                 imageFrame.replaceChildren(dishImage(item));
                 content.replaceChildren(
                     element('p', 'eyebrow', item.category),
-                    element('h2', '', item.name),
+                    title,
                     element('p', 'detail-description', item.description || 'Dish description and ingredients require restaurant verification.'),
                     element('p', 'detail-diet', item.foodType === 'vegetarian' ? 'Vegetarian' : item.foodType === 'non-vegetarian' ? 'Non-vegetarian' : 'Food type unverified'),
                     element('p', 'detail-availability', item.availability === 'available' ? 'Availability confirmed' : item.availability === 'unavailable' ? 'Currently unavailable' : 'Availability requires restaurant confirmation')
