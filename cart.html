@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Review items selected from the Midnight Bistro menu.">
+    <meta name="description" content="Review your Midnight Bistro preview cart.">
     <meta name="robots" content="noindex,nofollow">
-    <title>Your Cart | Midnight Bistro</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="pages.css"><link rel="stylesheet" href="auth.css">
-    <script src="scripts/site.js" defer></script><script src="scripts/cart.js" defer></script>
+    <title>Your Cart | Midnight Bistro</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="pages.css"><link rel="stylesheet" href="auth.css"><link rel="stylesheet" href="ordering.css">
+    <script src="scripts/image-config.js" defer></script><script src="scripts/site.js" defer></script><script src="scripts/menu-data.js" defer></script><script src="scripts/ordering.js" defer></script>
 </head>
 <body>
     <header class="site-header"><a class="brand" href="index.html">Midnight Bistro</a><nav aria-label="Primary navigation"><ul><li><a href="index.html">Home</a></li><li><a href="menu.html">Menu</a></li><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li><li><a href="login.html">Login</a></li><li><a href="cart.html" aria-current="page">Cart <span data-cart-count>0</span></a></li></ul></nav></header>
-    <main class="page-main"><section class="page-intro"><p class="eyebrow">Your selection</p><h1>Your Cart</h1><p>Cart contents are stored in this browser. Current prices are refreshed from the server at checkout.</p></section>
-        <section><ul class="cart-list" data-cart-items></ul><p class="notice" data-cart-status role="status" aria-live="polite"></p><p class="cart-total">Estimated subtotal: <strong data-cart-total>₹0</strong></p><p><a class="button button--secondary" href="menu.html">Continue Browsing</a> <a class="button button--primary" href="checkout.html">Proceed to Checkout</a></p></section>
+    <main class="page-main"><section class="page-intro"><p class="eyebrow">Your selection</p><h1>Your Cart</h1><p class="menu-price-note" data-ordering-status role="status">Preview only: menu prices and availability are not confirmed; no real orders or payments are processed.</p></section>
+        <section class="cart-layout"><div><ul class="cart-list" data-cart-items></ul><p class="notice" data-cart-status role="status" aria-live="polite"></p><p><button class="button button--secondary" type="button" data-clear-cart>Clear Cart</button></p></div>
+            <aside class="order-summary" aria-labelledby="cart-summary-title"><h2 id="cart-summary-title">Order summary</h2><p>Items <strong data-cart-quantity>0</strong></p><p>Subtotal <strong data-cart-subtotal>₹0</strong></p><p data-cart-tax hidden>Tax <strong data-total-value>₹0</strong></p><p data-cart-delivery hidden>Delivery <strong data-total-value>₹0</strong></p><p class="order-summary__total">Preview total <strong data-cart-total>₹0</strong></p><a class="button button--secondary" href="menu.html">Continue Shopping</a><a class="button button--primary" data-checkout-link href="checkout.html">Proceed to Checkout</a><p class="notice">No taxes, delivery fees, or discounts are added unless verified restaurant settings provide them.</p></aside>
+        </section>
     </main>
     <footer class="site-footer"><a class="brand" href="index.html">Midnight Bistro</a><p><small>&copy; 2026 Midnight Bistro.</small></p></footer>
 </body>
