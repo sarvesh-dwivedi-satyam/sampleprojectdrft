@@ -140,6 +140,7 @@
         function add(menuItemId, quantity = 1, selections = []) {
             const item = byId.get(menuItemId);
             if (!item) throw new Error('This menu item is not available in the catalog.');
+            if (item.availability === 'unavailable') throw new Error(`${item.name} is currently unavailable.`);
             if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_QUANTITY) {
                 throw new Error(`Choose a quantity between 1 and ${MAX_QUANTITY}.`);
             }
@@ -341,6 +342,9 @@
                     element('p', 'detail-diet', item.foodType === 'vegetarian' ? 'Vegetarian' : item.foodType === 'non-vegetarian' ? 'Non-vegetarian' : 'Food type unverified'),
                     element('p', 'detail-availability', item.availability === 'available' ? 'Availability confirmed' : item.availability === 'unavailable' ? 'Currently unavailable' : 'Availability requires restaurant confirmation')
                 );
+                if (Array.isArray(item.ingredients) && item.ingredients.length) {
+                    content.append(element('p', 'detail-ingredients', `Ingredients: ${item.ingredients.join(', ')}`));
+                }
                 const customizationGroups = settings.customizations[item.id] || [];
                 if (customizationGroups.length) {
                     for (const group of customizationGroups) {
@@ -373,7 +377,7 @@
                 status.textContent = '';
                 addButton.disabled = item.availability === 'unavailable';
                 addButton.textContent = item.availability === 'available' ? 'Add to preview cart' : 'Add preview item';
-                orderButton.disabled = !store.canOrder(item);
+                orderButton.disabled = false;
                 updateAmount();
                 dialog.showModal();
             }
@@ -426,7 +430,7 @@
                 }
                 try {
                     store.add(selectedItem.id, quantity, selections);
-                    browser.location.href = 'checkout.html';
+                    browser.location.href = 'preview-checkout.html';
                 } catch (error) {
                     status.textContent = error.message;
                 }
@@ -442,7 +446,7 @@
         }
 
         function statusForPage(doc, message) {
-            const status = doc.querySelector('[data-ordering-status]');
+            const status = doc.querySelector('[data-ordering-feedback]');
             if (status) status.textContent = message;
         }
 
@@ -470,7 +474,7 @@
                     const detail = element('div', 'cart-item__details');
                     detail.append(
                         element('h2', '', entry.dishName),
-                        element('p', '', `${ordering.formatPrice(entry.unitPricePaise)} each · Preview price`)
+                        element('p', '', `${ordering.formatPrice(entry.unitPricePaise + entry.customizationPricePaise)} each · Preview price`)
                     );
                     if (entry.customizations.length) {
                         const labels = entry.customizations.map((selection) => {
@@ -593,7 +597,15 @@
                         element('h2', '', 'Preview confirmation'),
                         element('p', '', `Reference: ${reference}`),
                         element('p', '', `Prepared for ${customer.fullName}.`),
+                        element('p', '', `Mobile: ${customer.phone}`),
+                        ...(customer.email ? [element('p', '', `Email: ${customer.email}`)] : []),
+                        element('p', '', `Delivery address: ${customer.address}, ${customer.city} ${customer.postalCode}`),
+                        ...(form.elements.instructions.value.trim()
+                            ? [element('p', '', `Delivery instructions: ${form.elements.instructions.value.trim()}`)]
+                            : []),
+                        element('p', '', 'Fulfilment: Not configured · Status: Preview only'),
                         element('p', '', `${entries.length} distinct menu item(s), ${store.totals().quantity} serving(s).`),
+                        ...entries.map((entry) => element('p', '', `${entry.dishName} × ${entry.quantity} — ${ordering.formatPrice(entry.itemSubtotalPaise)}`)),
                         element('p', '', `Preview total: ${ordering.formatPrice(store.totals().totalPaise)}.`),
                         element('p', 'notice', 'This is a local demonstration only. No order was sent to the restaurant, no delivery was arranged, and no payment was collected.')
                     );

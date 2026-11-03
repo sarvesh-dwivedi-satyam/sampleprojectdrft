@@ -46,7 +46,18 @@
   }
 
   function updateCartCount() {
-    const total = readCart().reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    let total = 0;
+    try {
+      const saved = JSON.parse(localStorage.getItem('midnight-bistro-preview-cart-v2') || 'null');
+      if (saved && saved.version === 2 && Array.isArray(saved.entries)) {
+        total = saved.entries.reduce((sum, item) =>
+          Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity <= 20
+            ? sum + item.quantity
+            : sum, 0);
+      }
+    } catch (error) {
+      console.warn('Could not restore the cart count.', error);
+    }
     document.querySelectorAll('[data-cart-count]').forEach((node) => { node.textContent = String(total); });
   }
 

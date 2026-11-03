@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Review a Midnight Bistro preview order.">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Preview Checkout | Midnight Bistro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pages.css">
+    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="ordering.css">
+    <script src="scripts/image-config.js" defer></script>
+    <script src="scripts/site.js" defer></script>
+    <script src="scripts/menu-data.js" defer></script>
+    <script src="scripts/ordering-settings.js" defer></script>
+    <script src="scripts/ordering.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="index.html">Midnight Bistro</a>
+        <nav aria-label="Primary navigation"><ul>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="cart.html">Cart <span data-cart-count>0</span></a></li>
+            <li><a href="login.html">Login</a></li>
+        </ul></nav>
+    </header>
+    <main class="page-main">
+        <section class="page-intro">
+            <p class="eyebrow">Preview checkout</p>
+            <h1>Review your details</h1>
+            <p class="menu-price-note" data-ordering-status role="status">Preview only: menu prices and availability are not confirmed; no real orders or payments are processed.</p>
+        </section>
+        <section class="checkout-layout">
+            <form class="form-panel checkout-form" data-checkout-form novalidate>
+                <h2>Customer information</h2>
+                <label for="checkout-name">Full name</label>
+                <input id="checkout-name" name="fullName" autocomplete="name" required minlength="2" maxlength="120">
+                <label for="checkout-phone">Mobile number</label>
+                <input id="checkout-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required minlength="8" maxlength="20">
+                <label for="checkout-email">Email address <span>(optional)</span></label>
+                <input id="checkout-email" name="email" type="email" autocomplete="email" maxlength="254">
+                <label for="checkout-address">Delivery address</label>
+                <textarea id="checkout-address" name="address" autocomplete="street-address" rows="3" required minlength="5" maxlength="1000"></textarea>
+                <label for="checkout-city">City</label>
+                <input id="checkout-city" name="city" autocomplete="address-level2" required maxlength="120">
+                <label for="checkout-postal">Postal code</label>
+                <input id="checkout-postal" name="postalCode" autocomplete="postal-code" inputmode="text" required minlength="3" maxlength="12">
+                <label for="checkout-instructions">Delivery instructions <span>(optional)</span></label>
+                <textarea id="checkout-instructions" name="instructions" rows="2" maxlength="500"></textarea>
+                <fieldset class="checkout-options">
+                    <legend>Fulfilment</legend>
+                    <p>Delivery and pickup are not enabled because restaurant configuration has not been confirmed.</p>
+                </fieldset>
+                <fieldset class="checkout-options">
+                    <legend>Payment</legend>
+                    <p>No payment methods are configured. This preview will not collect payment details.</p>
+                </fieldset>
+                <button class="button button--primary" type="submit">Create Preview Confirmation</button>
+                <p class="notice" data-form-status role="status" aria-live="polite"></p>
+            </form>
+            <aside class="order-summary checkout-review" aria-labelledby="checkout-summary-title">
+                <h2 id="checkout-summary-title">Order review</h2>
+                <ul class="checkout-items" data-checkout-items></ul>
+                <p class="order-summary__total">Preview total <strong data-checkout-total>₹0</strong></p>
+                <a class="button button--secondary" href="cart.html">Back to cart</a>
+            </aside>
+        </section>
+        <section class="confirmation-panel" data-order-confirmation tabindex="-1" aria-labelledby="confirmation-title" hidden>
+            <p class="eyebrow">Local demonstration</p>
+            <h2 id="confirmation-title">Preview complete</h2>
+            <div data-confirmation-summary></div>
+            <a class="button button--primary" href="menu.html">Return to menu</a>
+        </section>
+    </main>
+    <footer class="site-footer">
+        <a class="brand" href="index.html">Midnight Bistro</a>
+        <p><small>&copy; 2026 Midnight Bistro.</small></p>
+    </footer>
+</body>
+</html>
