@@ -201,7 +201,15 @@
             priceGroup,
             element('span', 'menu-card__unavailable', item.availability === 'available' ? 'Available' : 'Availability to be confirmed')
         );
-        body.append(footer);
+        const actions = element('div', 'menu-card__actions');
+        const detailsButton = element('button', 'button button--secondary', 'View details');
+        detailsButton.type = 'button';
+        detailsButton.dataset.openDish = item.id;
+        const addButton = element('button', 'button button--primary', 'Add to preview cart');
+        addButton.type = 'button';
+        addButton.dataset.quickAdd = item.id;
+        actions.append(detailsButton, addButton);
+        body.append(footer, actions);
         card.append(figure, body);
         listItem.append(card);
         return listItem;
@@ -343,7 +351,11 @@
         }
         hideSuggestions();
         render();
-        search.focus();
+        if (option.type === 'item') {
+            window.MidnightDishDetails?.open(option.item);
+        } else {
+            search.focus();
+        }
     }
 
     function render() {
