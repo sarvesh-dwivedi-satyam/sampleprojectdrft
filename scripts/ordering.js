@@ -309,13 +309,21 @@
             const quantityOutput = dialog.querySelector('[data-detail-quantity]');
             const amount = dialog.querySelector('[data-detail-total]');
             const status = dialog.querySelector('[data-detail-status]');
+            const addButton = dialog.querySelector('[data-dialog-add]');
+            const orderButton = dialog.querySelector('[data-dialog-order]');
             let selectedItem = null;
             let quantity = 1;
             let selections = [];
 
             function updateAmount() {
                 if (!selectedItem) return;
-                amount.textContent = ordering.formatPrice((selectedItem.priceRupees * 100) * quantity);
+                let extraPaise = 0;
+                for (const selection of selections) {
+                    const group = (settings.customizations[selectedItem.id] || []).find((option) => option.id === selection.groupId);
+                    const choice = group?.choices.find((option) => option.id === selection.choiceId);
+                    if (choice) extraPaise += choice.pricePaise;
+                }
+                amount.textContent = ordering.formatPrice((selectedItem.priceRupees * 100 + extraPaise) * quantity);
                 quantityOutput.textContent = String(quantity);
             }
 
@@ -329,11 +337,41 @@
                     element('h2', '', item.name),
                     element('p', 'detail-description', item.description || 'Dish description and ingredients require restaurant verification.'),
                     element('p', 'detail-diet', item.foodType === 'vegetarian' ? 'Vegetarian' : item.foodType === 'non-vegetarian' ? 'Non-vegetarian' : 'Food type unverified'),
-                    element('p', 'detail-availability', item.availability === 'available' ? 'Availability confirmed' : 'Availability requires restaurant confirmation'),
-                    element('p', 'detail-customizations', 'Customization options have not been verified for this dish.')
+                    element('p', 'detail-availability', item.availability === 'available' ? 'Availability confirmed' : item.availability === 'unavailable' ? 'Currently unavailable' : 'Availability requires restaurant confirmation')
                 );
+                const customizationGroups = settings.customizations[item.id] || [];
+                if (customizationGroups.length) {
+                    for (const group of customizationGroups) {
+                        const fieldset = element('fieldset', 'detail-customization');
+                        const legend = element('legend', '', group.label);
+                        fieldset.append(legend);
+                        group.choices.forEach((choice) => {
+                            const label = element('label', 'detail-customization__choice');
+                            const input = element('input');
+                            input.type = group.multiple ? 'checkbox' : 'radio';
+                            input.name = `customization-${item.id}-${group.id}`;
+                            input.value = choice.id;
+                            input.checked = Boolean(choice.selectedByDefault);
+                            input.addEventListener('change', () => {
+                                selections = selections.filter((selection) =>
+                                    selection.groupId !== group.id || (group.multiple && selection.choiceId !== choice.id));
+                                if (input.checked) selections.push({ groupId: group.id, choiceId: choice.id });
+                                updateAmount();
+                            });
+                            label.append(input, doc.createTextNode(`${choice.label}${choice.pricePaise ? ` (+${ordering.formatPrice(choice.pricePaise)})` : ''}`));
+                            fieldset.append(label);
+                            if (input.checked) selections.push({ groupId: group.id, choiceId: choice.id });
+                        });
+                        content.append(fieldset);
+                    }
+                } else {
+                    content.append(element('p', 'detail-customizations', 'No verified customization options are available for this dish.'));
+                }
                 if (item.bestseller === true) content.append(element('span', 'menu-card__featured', 'Bestseller'));
                 status.textContent = '';
+                addButton.disabled = item.availability === 'unavailable';
+                addButton.textContent = item.availability === 'available' ? 'Add to preview cart' : 'Add preview item';
+                orderButton.disabled = !store.canOrder(item);
                 updateAmount();
                 dialog.showModal();
             }
@@ -341,16 +379,25 @@
             menuList.addEventListener('click', (event) => {
                 const trigger = event.target.closest('[data-open-dish]');
                 const quickAdd = event.target.closest('[data-quick-add]');
-                if (trigger) {
-                    const item = browser.MidnightMenu.find((candidate) => candidate.id === trigger.dataset.openDish);
-                    if (item) open(item);
-                } else if (quickAdd) {
+                if (quickAdd) {
                     try {
                         store.add(quickAdd.dataset.quickAdd);
                         statusForPage(doc, `Added to preview cart. Cart: ${store.totals().quantity} item(s).`);
                     } catch (error) {
                         statusForPage(doc, error.message);
                     }
+                    return;
+                }
+                if (event.target.closest('button, a')) {
+                    if (trigger) {
+                        const item = browser.MidnightMenu.find((candidate) => candidate.id === trigger.dataset.openDish);
+                        if (item) open(item);
+                    }
+                    return;
+                }
+                if (trigger) {
+                    const item = browser.MidnightMenu.find((candidate) => candidate.id === trigger.dataset.openDish);
+                    if (item) open(item);
                 }
             });
 
@@ -423,6 +470,14 @@
                         element('h2', '', entry.dishName),
                         element('p', '', `${ordering.formatPrice(entry.unitPricePaise)} each · Preview price`)
                     );
+                    if (entry.customizations.length) {
+                        const labels = entry.customizations.map((selection) => {
+                            const group = (settings.customizations[entry.menuItemId] || []).find((option) => option.id === selection.groupId);
+                            const choice = group?.choices.find((option) => option.id === selection.choiceId);
+                            return choice ? `${group.label}: ${choice.label}` : '';
+                        }).filter(Boolean);
+                        if (labels.length) detail.append(element('p', 'cart-item__customizations', labels.join(' · ')));
+                    }
                     const controls = element('div', 'quantity-control');
                     const decrease = element('button', 'button button--secondary', '−');
                     decrease.type = 'button';
