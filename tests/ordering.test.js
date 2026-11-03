@@ -102,7 +102,8 @@ test('restores valid saved entries and safely clears corrupt and legacy data', (
     const restored = createCartStore({
         catalog: [{ id: 'mb-0001', name: 'Paneer Tikka', category: 'Starters', priceRupees: 249, imageKey: 'paneerTikka', availability: 'requires-confirmation' }],
         storage,
-        createId: () => 'unused'
+        createId: () => 'unused',
+        onWarning: (message) => warnings.push(message)
     });
     assert.equal(restored.totals().quantity, 2);
 
@@ -139,7 +140,7 @@ test('only verified settings enable orders and add configured totals', () => {
 });
 
 test('formats only safe non-negative prices', () => {
-    assert.equal(formatPrice(12_500), '₹125');
+    assert.equal(formatPrice(12_500), '₹125.00');
     assert.throws(() => formatPrice(-1), /invalid price/);
     assert.throws(() => formatPrice(Number.MAX_SAFE_INTEGER + 1), /invalid price/);
 });
